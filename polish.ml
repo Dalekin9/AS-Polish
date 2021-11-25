@@ -247,7 +247,7 @@ let get_big_list (l) =
 
 
 (* convertit une liste de (pos, list) list en (pos, instr ) list*)
-let rec convert_list_in_ocaml (pos_string_list_list:(position * name list) list) (pos_ocaml_list_list:(position * instr)list)=
+let rec convert_list_in_ocaml (pos_string_list_list:(position * name list) list) (pos_ocaml_list_list:block)=
   match pos_string_list_list with 
   | [] -> pos_ocaml_list_list
   | (x,y)::l -> 
@@ -277,17 +277,17 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name list) list)
             let db_list2 = constr_list ( c ) [] prof in
             let list_now = get_big_list db_list in
             let second_block = get_name_list db_list in 
-            let e = If(create_condition y, create_block first_block, create_block second_block) in 
+            let e = If(create_condition y, (convert_list_in_ocaml first_block []), (convert_list_in_ocaml second_block [])) in 
             convert_list_in_ocaml l ( (x, e)::pos_ocaml_list_list)
           | _ ->
-            let e = If(create_condition y, create_block first_block, []) in 
+            let e = If(create_condition y, (convert_list_in_ocaml first_block []), []) in 
             convert_list_in_ocaml l ( (x, e)::pos_ocaml_list_list)
       | "WHILE"::ll ->
         let prof = get_profondeur y 0 in 
         let db_list = constr_list ( (x,y)::l) [] prof in
         let list_now = get_big_list db_list in
         let first_block = get_name_list db_list in 
-        let e = While(create_condition y, create_block first_block) in 
+        let e = While(create_condition y, (convert_list_in_ocaml first_block [])) in 
         convert_list_in_ocaml l ( (x, e)::pos_ocaml_list_list)
       | _-> failwith "error in parcours_y" 
 
@@ -303,7 +303,7 @@ pour chaque liste de string/char, convertir en code ocaml
 
   let contenu = convert_file_in_string_list 0 (open_in filename) in 
   let list_list_mot = convert_string_list_in_string_list_list contenu [] in
-  convert_list_in_ocaml 
+  convert_list_in_ocaml list_list_mot
 
 
 
@@ -432,7 +432,7 @@ let rec print_block (block:block) (indent:int)=
 pr chaque instruction
 print l'expression en fonction de ce qu'elle contient
 *)
-let print_polish (p:program) =   
+let print_polish (p:(position*instr)list) =   
   print_block p 0
 
 let eval_polish (p:program) : unit = failwith "TODO"
@@ -443,7 +443,7 @@ let usage () =
 
 let main () =
   match Sys.argv with
-  | [|_;"--reprint";file|] -> print_polish (read_polish file)
+  | [|_;"--reprint";file|] -> print_polish ( read_polish file )
   | [|_;"--eval";file|] -> eval_polish (read_polish file)
   | _ -> usage ()
 
