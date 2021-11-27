@@ -83,14 +83,14 @@ let rec max_instr (b:block) (max:int)=
 
 
 (*Retourne la position de la plus petite instruction du programme*)
-let rec min_instr (b:block) (min:int)= 
+let rec min_instr (b:(position * instr)list) (min)= 
   match b with
   | [] -> min
   | (x,y)::l ->
-    if (x < min) then
-      min_instr b x
+    if (x <= min) then
+      min_instr l x
     else
-      min_instr b min
+      min_instr l min
 
 let print_op (op:op) =
   match op with 
@@ -553,6 +553,8 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
           let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) in
           let e = While(co,b_a) in
           convert_list_in_ocaml pos_string_list_list ((pos,e)::(List.append b_a list_fin)) (cas_if_pos liste_blocks)
+        | "COMMENT"::l ->
+          convert_list_in_ocaml pos_string_list_list (list_fin) (pos+1)
         | x::l ->
           convert_list_in_ocaml pos_string_list_list ((pos, Set(x, convert_expr l))::list_fin) (pos+1)
         | _ -> failwith "rien d'autre"
@@ -613,8 +615,9 @@ pour chaque liste de string/char, convertir en code ocaml
 
 
 
-let print_polish (p:program) =  
-  print_block p 0 0
+let print_polish (p:(position * instr) list) =  
+  let min = min_instr p (List.length p) in
+  print_block p 0 min
 
 let eval_polish (p:program) : unit = failwith "TODO"
 
