@@ -518,27 +518,30 @@ let rec affiche_list (list) =
   | _-> print_string ""
 
 (* convertit une liste de (pos, list) list en (pos, instr ) list*)
-let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (list_fin) (pos) =
+let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (list_fin) (pos) (prof_base)=
   if (pos <= get_max_pos pos_string_list_list 0) then
     let lis = get_line_at_pos pos_string_list_list pos in
     let prof = get_profondeur lis 0 in
+    if (prof != prof_base) then
+      failwith "Pas d'indentation correcte."
+    else
     let liste = String.split_on_char ' ' lis in 
     let rec parcours_de_la_liste (liste) = 
       match liste with
         | ""::l -> parcours_de_la_liste l
         | " "::l -> parcours_de_la_liste l
         | "READ"::l ->
-          convert_list_in_ocaml pos_string_list_list ((pos, convert_read l)::list_fin) (pos+1)
+          convert_list_in_ocaml pos_string_list_list ((pos, convert_read l)::list_fin) (pos+1) (prof_base)
         | "PRINT"::l ->
-          convert_list_in_ocaml pos_string_list_list ((pos, convert_print l)::list_fin) (pos+1)
+          convert_list_in_ocaml pos_string_list_list ((pos, convert_print l)::list_fin) (pos+1) (prof_base)
         | "IF"::l ->
           let co = create_condition l in 
           let liste_blocks = create_block pos_string_list_list pos (pos+1) prof true [] [] in 
           let cas_if = cas_if liste_blocks in
-          let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) in
-          let b_b = convert_list_in_ocaml (List.nth cas_if 1) [] (pos+2+List.length b_a) in 
+          let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) (prof_base + 2) in
+          let b_b = convert_list_in_ocaml (List.nth cas_if 1) [] (pos+2+List.length b_a) (prof_base + 2) in 
           let e = If(co, b_a, b_b) in 
-          convert_list_in_ocaml pos_string_list_list ((pos,e)::(List.append(List.append b_a b_b) list_fin)) (cas_if_pos liste_blocks)
+          convert_list_in_ocaml pos_string_list_list ((pos,e)::(List.append(List.append b_a b_b) list_fin)) (cas_if_pos liste_blocks) (prof_base)
           (*
           block1 = (pos * instr) list 
           block2 = (pos * instr) list
@@ -550,13 +553,13 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
           let co = create_condition l in 
           let liste_blocks = create_block pos_string_list_list pos (pos+1) prof true [] [] in 
           let cas_if = cas_if liste_blocks in
-          let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) in
+          let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) (prof_base+2) in
           let e = While(co,b_a) in
-          convert_list_in_ocaml pos_string_list_list ((pos,e)::(List.append b_a list_fin)) (cas_if_pos liste_blocks)
+          convert_list_in_ocaml pos_string_list_list ((pos,e)::(List.append b_a list_fin)) (cas_if_pos liste_blocks) (prof_base)
         | "COMMENT"::l ->
-          convert_list_in_ocaml pos_string_list_list (list_fin) (pos+1)
+          convert_list_in_ocaml pos_string_list_list (list_fin) (pos+1) (prof_base)
         | x::l ->
-          convert_list_in_ocaml pos_string_list_list ((pos, Set(x, convert_expr l))::list_fin) (pos+1)
+          convert_list_in_ocaml pos_string_list_list ((pos, Set(x, convert_expr l))::list_fin) (pos+1) (prof_base)
         | _ -> failwith "rien d'autre"
 
       in parcours_de_la_liste liste
@@ -610,7 +613,7 @@ pour chaque liste de string/char, convertir en code ocaml
 
   let contenu = lecture filename in 
   (*let list_list_mot = convert_string_list_in_string_list_list contenu [] in*)
-  convert_list_in_ocaml contenu [] 0
+  convert_list_in_ocaml contenu [] 0 0
 
 
 
