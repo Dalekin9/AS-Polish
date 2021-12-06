@@ -47,6 +47,7 @@ and block = (position * instr) list
 (** Un programme Polish est un bloc d'instructions *)
 type program = block
 
+module NameTable = Map.Make(String)
 
 (***********************************************************************)
 
@@ -54,7 +55,83 @@ let read_polish (filename:string) : program = failwith "TODO"
 
 let print_polish (p:program) : unit = failwith "TODO"
 
-let eval_polish (p:program) : unit = failwith "TODO"
+let eval_polish (p:program) : unit = 
+  let env = NameTable.empty in
+  
+  (* Transforme une expression en sa valeur finale *)
+  let rec exprToVal (ex:expr) (envir:int NameTable.t)  =
+    match ex with
+    | Num(x) -> x
+
+    | Var(x) -> NameTable.find x envir
+    
+    | Op(op,ex1,ex2) -> 
+      match op with
+      | Add -> (exprToVal ex1 envir) + (exprToVal ex2 envir) 
+      | Sub -> (exprToVal ex1 envir) - (exprToVal ex2 envir)
+      | Mul -> (exprToVal ex1 envir) * (exprToVal ex2 envir)
+
+      | Div ->  if (exprToVal ex2 envir) = 0 then 
+                  (print_string "Division par 0";
+                  exit(1))
+                else
+                  (exprToVal ex1 envir) / (exprToVal ex2 envir)
+
+      | Mod ->  if (exprToVal ex2 envir) = 0 then 
+                  (print_string "Modulo par 0";
+                  exit(1))
+                else
+                  (exprToVal ex1 envir) mod (exprToVal ex2 envir) 
+  in
+
+  (* Transforme une condition en sa valeur booléene *)  
+  let condToBool (condition:cond) (envir: int NameTable.t) = 
+    match condition with
+    | (ex1, compar, ex2) -> 
+                            match compar with
+                            | Eq -> (exprToVal ex1 envir) = (exprToVal ex2 envir)
+                            | Ne -> (exprToVal ex1 envir) <> (exprToVal ex2 envir)
+                            | Lt -> (exprToVal ex1 envir) < (exprToVal ex2 envir)
+                            | Le -> (exprToVal ex1 envir) <= (exprToVal ex2 envir)
+                            | Gt -> (exprToVal ex1 envir) > (exprToVal ex2 envir)
+                            | Ge -> (exprToVal ex1 envir) >= (exprToVal ex2 envir)
+  in
+
+  (* Parcours la liste de (position, instruction) et évalue chaque instruction *)
+  let rec eval (p:program) (envir: int NameTable.t) =
+
+    (* Evalue l'instruction donnée en paramètre grâce à l'environnement donné *)
+    let instr_eval (ins:instr) (envir:int NameTable.t) =
+    match ins with
+    | Set(x,y) -> NameTable.add x (exprToVal y envir) envir
+
+    | Read(name) -> NameTable.add name (read_int()) envir
+    
+    | If(cond,b1,b2) -> if (condToBool cond envir) then
+                          eval b1 envir
+                        else
+                          eval b2 envir
+
+    | Print(ex) -> (print_int (exprToVal ex envir);
+                    envir)
+
+    |While(cond,block) -> if (condToBool cond envir) then
+                            eval block envir
+                          else
+                            envir
+    in
+    
+    match p with
+    |[] -> print_string "FIN"
+    |[(pos,ins)] -> let envir = instr_eval ins envir in
+                    eval [] envir 
+    |(pos,ins)::l -> let envir = instr_eval ins envir in
+                      eval l envir 
+  in
+
+  eval p env
+
+;;
 
 let usage () =
   print_string "Polish : analyse statique d'un mini-langage\n";
