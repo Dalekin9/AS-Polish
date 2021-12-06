@@ -1,3 +1,5 @@
+open Syntaxe
+
 (* decouper le fichier en ligne de string *)
 let lecture (filename) = 
 let file = open_in filename in
@@ -226,7 +228,7 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
       failwith "Pas d'indentation correcte."
     else
     let liste = String.split_on_char ' ' lis in 
-    let rec parcours_de_la_liste (liste) = 
+    let parcours_de_la_liste (liste) = 
       match liste with
         | "READ"::l ->
           convert_list_in_ocaml pos_string_list_list ((pos, convert_read l)::list_fin) (pos+1) (prof_base)

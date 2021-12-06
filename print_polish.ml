@@ -1,3 +1,5 @@
+open Syntaxe
+
 (*Cherche le block d'insctruction la position pos*)
 let rec search_block (pos:position) (b:(position * instr)list) =
   match b with

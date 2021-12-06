@@ -1,5 +1,5 @@
 (executable
  (name polish)
- (modules polish read_polish print_polish)
+ (modules polish syntaxe read_polish print_polish)
  (flags :standard -w -27-26-32-33 \ -short-paths) 
 )
