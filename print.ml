@@ -90,7 +90,8 @@ let rec print_block (block) (indent:int) (pos) : unit=
         print_string (print_indentation indent 0 "");
         let inst = search_block pos block in
         match inst with
-        | None -> print_string "";
+        | None -> 
+          print_string "";
         | Some Set(x,y) -> 
           print_string x;
           print_string " :=";
@@ -115,14 +116,14 @@ let rec print_block (block) (indent:int) (pos) : unit=
           if (b2 != []) then
             print_string (print_indentation indent 0 "");
             print_string "ELSE \n";
-            print_block b2 (indent + 2) (pos+ List.length b1 + 2);
-          print_block block indent (pos+ List.length b1 + 1 + List.length b2 +2)
+            print_block b2 (indent + 2) ((max_pos b1 0)+1);
+          print_block block indent ((max_pos b2 0) +1);
         | Some While(c,b) ->
           print_string "WHILE";
           print_cond c;
           print_string "\n";
           print_block b (indent + 2) (pos+1);
-          print_block block indent (pos + List.length b + 2)
+          print_block block indent ((max_pos b 0) + 1)
 
 let print_polish (p:(position * instr) list) =  
   let min = min_instr p (List.length p) in
