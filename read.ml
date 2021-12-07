@@ -117,7 +117,7 @@ let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) =
     if name_is_comp (x) then
       (x, f_exp, (y::l))
     else
-      separate_cond (y::l) ([x]@f_exp) l_exp
+      separate_cond (y::l) (f_exp@[x]) l_exp
   | _ -> failwith "Impossible de separer la condition en 2"
 
 (*create condition*)

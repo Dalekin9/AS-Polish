@@ -10,18 +10,6 @@ let rec search_block (pos:position) (b:(position * instr)list) =
     else
       search_block pos l
 
-
-(*Retourne le nombre total d'instruction du programme*)
-let rec max_instr (b:block) (max:int)= 
-  match b with
-  | [] -> max
-  | (x,y)::l ->
-    if (x > max) then
-      max_instr b x
-    else
-      max_instr b max
-
-
 (*Retourne la position de la plus petite instruction du programme*)
 let rec min_instr (b:(position * instr)list) (min)= 
   match b with
@@ -90,45 +78,52 @@ let rec max_pos (block) (pos:position) =
     else 
       max_pos l pos
 
+let print_b2 (indent)=
+  print_string (print_indentation indent 0 "");
+  print_string "ELSE \n"
+
+  
+
 let rec print_block (block) (indent:int) (pos) : unit= 
+    if (block != []) then
+      if (pos <= (max_pos block 0)) then
+        print_string (print_indentation indent 0 "");
+        let inst = search_block pos block in
+        match inst with
+        | None -> print_string "";
+        | Some Set(x,y) -> 
+          print_string x;
+          print_string " :=";
+          print_expr y;
+          print_string "\n";
+          print_block block indent (pos+1)
+        | Some Read(x) -> 
+          print_string "READ ";
+          print_string x;
+          print_string "\n";
+          print_block block indent (pos+1)
+        | Some Print(x) ->
+          print_string "PRINT";
+          print_expr x;
+          print_string "\n";
+          print_block block indent (pos+1)
+        | Some If(c,b1,b2) ->
+          print_string "IF";
+          print_cond c;
+          print_string "\n";
+          print_block b1 (indent + 2) (pos+1);
+          if (b2 != []) then
+            print_string (print_indentation indent 0 "");
+            print_string "ELSE \n";
+            print_block b2 (indent + 2) (pos+ List.length b1 + 2);
+          print_block block indent (pos+ List.length b1 + 1 + List.length b2 +2)
+        | Some While(c,b) ->
+          print_string "WHILE";
+          print_cond c;
+          print_string "\n";
+          print_block b (indent + 2) (pos+1);
+          print_block block indent (pos + List.length b + 2)
 
-    if (pos <= (max_pos block 0)) then
-      print_string (print_indentation indent 0 "");
-      let inst = search_block pos block in
-      match inst with
-      | None -> print_string "";
-      | Some Set(x,y) -> 
-        print_string x;
-        print_string " :=";
-        print_expr y;
-        print_string "\n";
-        print_block block indent (pos+1)
-      | Some Read(x) -> 
-        print_string "READ ";
-        print_string x;
-        print_string "\n";
-        print_block block indent (pos+1)
-      | Some Print(x) ->
-        print_string "PRINT";
-        print_expr x;
-        print_string "\n";
-        print_block block indent (pos+1)
-      | Some If(c,b1,b2) ->
-        print_string "IF";
-        print_cond c;
-        print_string "\n";
-        print_block b1 (indent + 2) (pos+1);
-        if (b2 != []) then
-          print_string "ELSE \n";
-          print_block b2 (indent + 2) (pos+ List.length b1 + 2);
-        print_block block indent (pos+ List.length b1 + 1 + List.length b2 +1)
-      | Some While(c,b) ->
-        print_string "WHILE";
-        print_cond c;
-        print_string "\n";
-        print_block b (indent + 2) (pos+1);
-        print_block block indent (pos + List.length b + 1 )
-
-        let print_polish (p:(position * instr) list) =  
-          let min = min_instr p (List.length p) in
-          print_block p 0 min
+let print_polish (p:(position * instr) list) =  
+  let min = min_instr p (List.length p) in
+  print_block p 0 min
