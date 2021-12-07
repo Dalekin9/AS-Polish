@@ -44,19 +44,19 @@ match list with
 | x::y::l -> 
   if (name_is_op x) then (*+....*)
     let rec sep_liste (right:int) (left:int) (liste:name list) (nv_list:name list) (finale:name list list)= 
-      if right == 0 && left == 0  then
+      if right = 0 && left = 0  then
         nv_list::liste::finale
       else 
         match liste with
         | [] -> nv_list::liste::finale
         | x::l -> 
           if name_is_op x then
-            if right == 0 then
+            if right = 0 then
               sep_liste 1 left l (x::nv_list) finale
             else 
               sep_liste right (left + 1) l (x::nv_list) finale
           else
-            if right == 0 then
+            if right = 0 then
               sep_liste 0 (left-1) l (x::nv_list) finale
             else 
               sep_liste (right-1) left l (x::nv_list) finale
@@ -117,7 +117,7 @@ let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) =
     if name_is_comp (x) then
       (x, f_exp, (y::l))
     else
-      separate_cond (y::l) (x::f_exp) l_exp
+      separate_cond (y::l) ([x]@f_exp) l_exp
   | _ -> failwith "Impossible de separer la condition en 2"
 
 (*create condition*)
@@ -156,7 +156,7 @@ let rec convert_print (list:string list) =
 
 let rec get_profondeur (list:name) (prof:position) =
   if (prof < String.length list) then
-    if (String.get list prof == ' ') then
+    if (String.get list prof = ' ') then
       get_profondeur list (prof+1)
     else
       prof
@@ -176,7 +176,7 @@ let rec get_line_at_pos (pos_string_list_list:(position * name) list) (pos) =
     print_string (string_of_int pos);
     failwith "pas de ligne a la pos"
   | (x,y)::l ->
-    if x == pos then
+    if x = pos then
       y
     else
       get_line_at_pos l pos
@@ -228,8 +228,10 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
       failwith "Pas d'indentation correcte."
     else
     let liste = String.split_on_char ' ' lis in 
-    let parcours_de_la_liste (liste) = 
+    let rec parcours_de_la_liste (liste) = 
       match liste with
+        | ""::l -> parcours_de_la_liste l
+        | " "::l -> parcours_de_la_liste l
         | "READ"::l ->
           convert_list_in_ocaml pos_string_list_list ((pos, convert_read l)::list_fin) (pos+1) (prof_base)
         | "PRINT"::l ->

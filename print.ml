@@ -5,7 +5,7 @@ let rec search_block (pos:position) (b:(position * instr)list) =
   match b with
   | [] -> (*failwith "NO"*) None
   | (x,y)::l ->
-    if x == pos then
+    if x = pos then
       Some y
     else
       search_block pos l

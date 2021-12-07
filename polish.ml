@@ -11,11 +11,11 @@ let usage () =
 let main () =
   match Sys.argv with
   | [|_;"--reprint";file|] -> 
-    let pro = Read_polish.read_polish file in 
+    let pro = Read.read_polish file in 
     let p = (0, While( (Num(4),Eq,Num(5)),( (1, Print(Num(7)))::(2, Read("b"))::(3, Read("d"))::[] )))::(4, Read("g"))::[] in
-    Print_polish.print_polish pro
+    Print.print_polish pro
   | [|_;"--eval";file|] -> 
-    let pro = Read_polish.read_polish file in 
+    let pro = Read.read_polish file in 
     eval_polish pro
   | _ -> usage ()
 
