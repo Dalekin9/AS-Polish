@@ -1,0 +1,23 @@
+image: ocaml/opam
+
+stages:
+    - main
+
+create_badge_svg:
+    stage: main
+    script:
+        - opam install -y dune ocamlfind
+        - cd projects/Polish/proto/
+        - make tests.report.svg
+    artifacts:
+        when: always
+        paths:
+            - tests.report.svg
+            - tests/reprint.report.svg
+            - tests/eval.report.svg
+            - tests/bonus-zarith.report.svg
+            - tests/help.report.svg
+    only:
+        - main
+        - master
+        - dev

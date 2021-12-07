@@ -1,6 +1,12 @@
 Projet PF5 2021 : Polish
 ========================
 
+![](http://gaufre.informatique.univ-paris-diderot.fr/yrg/pf5-projet/-/jobs/artifacts/master/raw/projects/Polish/proto/tests/help.report.svg?job=create_badge_svg)
+![](http://gaufre.informatique.univ-paris-diderot.fr/yrg/pf5-projet/-/jobs/artifacts/master/raw/projects/Polish/proto/tests/reprint.report.svg?job=create_badge_svg)
+![](http://gaufre.informatique.univ-paris-diderot.fr/yrg/pf5-projet/-/jobs/artifacts/master/raw/projects/Polish/proto/tests/eval.report.svg?job=create_badge_svg)
+![](http://gaufre.informatique.univ-paris-diderot.fr/yrg/pf5-projet/-/jobs/artifacts/master/raw/projects/Polish/proto/tests/bonus-zarith.report.svg?job=create_badge_svg)
+
+
 ## Sujet de projet
 
 Voir [projet.pdf](projet.pdf)
