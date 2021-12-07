@@ -21,3 +21,4 @@ create_badge_svg:
         - main
         - master
         - dev
+        - test-ci-cd
