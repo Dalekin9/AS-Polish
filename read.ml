@@ -191,24 +191,24 @@ let rec get_max_pos (liste) (pos) =
       get_max_pos l pos
 
 
-let rec create_block (liste:(position*name)list) (pos_init:position) (pos_actu:position) (prof_init) (first) (f_list) (s_list)= 
+let rec create_block (liste:(position*name)list) (pos_init:position) (pos_actu:position) (prof_init) (first) (f_list) (s_list) (pos_else:position)= 
 
   if (pos_actu > get_max_pos liste 0) then
-    (pos_actu, f_list::s_list::[])
+    (pos_actu::pos_else::[], f_list::s_list::[])
   else
     let y = get_line_at_pos liste pos_actu in
     if (get_profondeur y 0 > prof_init) then
       if first then
-        create_block liste pos_init (pos_actu+1) prof_init first ((pos_actu,y)::f_list) s_list
+        create_block liste pos_init (pos_actu+1) prof_init first ((pos_actu,y)::f_list) s_list pos_else
       else
-        create_block liste pos_init (pos_actu+1) prof_init first f_list ((pos_actu,y)::s_list)
+        create_block liste pos_init (pos_actu+1) prof_init first f_list ((pos_actu,y)::s_list) pos_else
     else
       if is_Else y then
-        create_block liste pos_init (pos_actu+1) prof_init false f_list s_list
+        create_block liste pos_init (pos_actu+1) prof_init false f_list s_list pos_actu
       else
-        (pos_actu, f_list::s_list::[])
+        (pos_actu::pos_else::[], f_list::s_list::[])
 
-let cas_if (liste_blocks: position*(position * name)list list) = 
+let cas_if (liste_blocks) = 
   match liste_blocks with
   | (x,y) ->
     match y with 
@@ -216,7 +216,7 @@ let cas_if (liste_blocks: position*(position * name)list list) =
         a::b::[]
       | _ -> failwith "rien ds le if"
 
-let cas_if_pos (liste_blocks: position*(position * name)list list) = 
+let cas_if_pos (liste_blocks) = 
   match liste_blocks with
   | (x,y) -> x
 
@@ -235,6 +235,10 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
   if (pos <= get_max_pos pos_string_list_list 0) then
     let lis = get_line_at_pos pos_string_list_list pos in
     let prof = get_profondeur lis 0 in
+    print_int pos;
+    print_int prof;
+    print_int prof_base;
+    print_string "\n";
     if (prof != prof_base) then
       failwith "Pas d'indentation correcte."
     else
@@ -249,19 +253,22 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
           convert_list_in_ocaml pos_string_list_list ((pos_instr, convert_print l)::list_fin) (pos+1) (prof_base) (pos_instr + 1)
         | "IF"::l ->
           let co = create_condition l in 
-          let liste_blocks = create_block pos_string_list_list pos (pos+1) prof true [] [] in 
+          let liste_blocks = create_block pos_string_list_list pos (pos+1) prof true [] [] 0 in 
           let cas_if = cas_if liste_blocks in
           let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) (prof_base + 2) (pos_instr + 1) in
-          let b_b = convert_list_in_ocaml (List.nth cas_if 1) [] (pos+2+List.length b_a) (prof_base + 2) ((max_pos b_a 0) + 1) in 
+          let b_b = convert_list_in_ocaml (List.nth cas_if 1) [] ( (List.nth (cas_if_pos liste_blocks) 1) + 1) (prof_base + 2) ((max_pos b_a 0) + 1) in 
           let e = If(co, b_a, b_b) in 
-          convert_list_in_ocaml pos_string_list_list ((pos_instr,e)::(List.append(List.append b_a b_b) list_fin)) (cas_if_pos liste_blocks) (prof_base) ((max_pos b_b 0) + 1)
+          if (b_b = []) then
+            convert_list_in_ocaml pos_string_list_list ((pos_instr,e)::list_fin) (List.hd (cas_if_pos liste_blocks)) (prof_base) ((max_pos b_a 0) + 1)
+          else
+            convert_list_in_ocaml pos_string_list_list ((pos_instr,e)::list_fin) (List.hd (cas_if_pos liste_blocks)) (prof_base) ((max_pos b_b 0) + 1)
         | "WHILE"::l ->
           let co = create_condition l in 
-          let liste_blocks = create_block pos_string_list_list pos (pos+1) prof true [] [] in 
+          let liste_blocks = create_block pos_string_list_list pos (pos+1) prof true [] [] 0 in 
           let cas_if = cas_if liste_blocks in
           let b_a = convert_list_in_ocaml (List.nth cas_if 0) [] (pos+1) (prof_base+2) (pos_instr + 1) in
           let e = While(co,b_a) in
-          convert_list_in_ocaml pos_string_list_list ((pos_instr,e)::(List.append b_a list_fin)) (cas_if_pos liste_blocks) (prof_base) ((max_pos b_a 0) + 1)
+          convert_list_in_ocaml pos_string_list_list ((pos_instr,e)::list_fin) (List.hd (cas_if_pos liste_blocks)) (prof_base) ((max_pos b_a 0) + 1)
         | "COMMENT"::l ->
           convert_list_in_ocaml pos_string_list_list (list_fin) (pos+1) (prof_base) (pos_instr)
         | x::l ->

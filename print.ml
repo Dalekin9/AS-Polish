@@ -78,14 +78,8 @@ let rec max_pos (block) (pos:position) =
     else 
       max_pos l pos
 
-let print_b2 (indent)=
-  print_string (print_indentation indent 0 "");
-  print_string "ELSE \n"
-
-  
-
 let rec print_block (block) (indent:int) (pos) : unit= 
-    if (block != []) then
+    if (block != [] ) then
       if (pos <= (max_pos block 0)) then
         print_string (print_indentation indent 0 "");
         let inst = search_block pos block in
@@ -113,11 +107,12 @@ let rec print_block (block) (indent:int) (pos) : unit=
           print_cond c;
           print_string "\n";
           print_block b1 (indent + 2) (pos+1);
-          if (b2 != []) then
-            print_string (print_indentation indent 0 "");
-            print_string "ELSE \n";
-            print_block b2 (indent + 2) ((max_pos b1 0)+1);
-          print_block block indent ((max_pos b2 0) +1);
+          if (b2 = []) then
+            print_block block indent ((max_pos b1 0) +1)
+          else
+            ( print_string ((print_indentation indent 0 "")^"ELSE\n");
+              print_block b2 (indent + 2) ((max_pos b1 0)+1);
+              print_block block indent ((max_pos b2 0) +1))
         | Some While(c,b) ->
           print_string "WHILE";
           print_cond c;
