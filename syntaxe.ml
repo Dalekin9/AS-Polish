@@ -1,10 +1,3 @@
-
-(** Projet Polish -- Analyse statique d'un mini-langage impératif *)
-
-(** Note : cet embryon de projet est pour l'instant en un seul fichier
-    polish.ml. Il est recommandé d'architecturer ultérieurement votre
-    projet en plusieurs fichiers source de tailles raisonnables *)
-
 (*****************************************************************************)
 (** Syntaxe abstraite Polish (types imposés, ne pas changer sauf extensions) *)
 
@@ -47,27 +40,4 @@ and block = (position * instr) list
 (** Un programme Polish est un bloc d'instructions *)
 type program = block
 
-
 (***********************************************************************)
-
-let read_polish (filename:string) : program = failwith "TODO"
-
-let print_polish (p:program) : unit = failwith "TODO"
-
-let eval_polish (p:program) : unit = failwith "TODO"
-
-let simpl_polish (p:program) : unit = failwith "TODO"
-
-let usage () =
-  print_string "Polish : analyse statique d'un mini-langage\n";
-  print_string "usage: à documenter (TODO)\n"
-
-let main () =
-  match Sys.argv with
-  | [|_;"--reprint";file|] -> print_polish (read_polish file)
-  | [|_;"--eval";file|] -> eval_polish (read_polish file)
-  | [|_;"--simpl";file|] -> eval_polish (read_polish file)
-  | _ -> usage ()
-
-(* lancement de ce main *)
-let () = main ()
