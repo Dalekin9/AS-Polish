@@ -4,10 +4,13 @@ open Syntaxe
 
 let rec search_block (pos:position) (b:(position * instr)list) =
       match b with
-      | [] -> (*failwith "NO"*) None
+      | [] -> (*failwith "NO"*) 
+      print_string "ici";
+      None
       | (x,y)::l ->
         if x = pos then
-          Some y
+            (print_string "la";
+          Some y)
         else
           search_block pos l
 
@@ -29,16 +32,16 @@ let get_val e : int =
     | _ -> failwith "erreur get_val : appel sur autre que Const"
 
 (*Applique l'operation sur e1 et e2*)
-let apply_Op op e1 e2 : int =
-    match op with
+let apply_Op (o:op) (e1:int) (e2:int) : int =
+    match o with
     | Add -> e1 + e2
     | Sub -> e1 - e2
     | Mul -> e1 * e2
     | Div -> e1 / e2
-    | Mod -> e1 % e2
+    | Mod -> e1 mod e2
 
 (*determiner si l'expression est une Constante*)
-let is_Const (e:expr) : boolean =
+let is_Const (e:expr) : bool =
     match e with
     | Num(i) -> true
     | _ -> false
@@ -54,7 +57,7 @@ let simpl_exp (e:expr) : expr =
         else if is_Const e1 && (get_val e1) = 0 then
             match o with
             | Add -> e2
-            | Sub -> e2
+            | Sub -> Op(o,e1,e2)
             | Mul -> Num(0)
             | Div -> Num(0)
             | Mod -> Num(0)
@@ -73,33 +76,58 @@ let simpl_exp (e:expr) : expr =
             match o with
             | Mul -> e1
             | _ -> Op(o,e1,e2)
+        else
+            Op(o,e1,e2)
 
 let simpl_cond (c) : cond =
     match c with
-    | (e1, com, e2) -> cond( (simpl_exp e1), com, (simpl_exp e2) )
+    | (e1, com, e2) -> ( (simpl_exp e1),com , (simpl_exp e2) )
 
-let rec simpl_const (p:program) (pos) (p2:program)=
-    if (pos > max_pos p) then
+let rec simpl_const (p:program) (pos:position) (p2:program)=
+    print_int pos;
+    print_int (max_pos p 0);
+    print_string "\n";
+    if (pos <= (max_pos p 0)) then
+        (print_string "fesse";
         let inst = search_block pos p in
+        print_string "inst";
         match inst with
-        | Set(n,e) -> simpl p (pos+1) ( (pos, Set(n, (simpl_exp e)))::p2)
-        | Read(n) -> simpl p (pos+1) ( (pos, Read(n))::p2 )
-        | Print(e) -> simpl p (pos+1) ( (pos, Print(simpl_exp e))::p2 )
-        | If(c,b1,b2) ->
+        | None -> 
+            print_int pos;
+            print_string "\n";
+            failwith "none"
+        | Some Set(n,e) -> 
+            print_int pos;
+            print_string "\n";
+            simpl_const p (pos+1) ( (pos, Set(n, (simpl_exp e)))::p2)
+        | Some Read(n) -> 
+            print_int pos;
+            print_string "\n";
+            simpl_const p (pos+1) ( (pos, Read(n))::p2 )
+        | Some Print(e) -> 
+            print_int pos;
+            print_string "\n";
+            simpl_const p (pos+1) ( (pos, Print(simpl_exp e))::p2 )
+        | Some If(c,b1,b2) ->
+            print_int pos;
+            print_string "\n";
             let nb1 = simpl_const b1 (pos+1) [] in
-            let nb2 = simpl_const b2 (max_pos nb1 + 1) [] in
+            let nb2 = simpl_const b2 (max_pos nb1 0 + 1) [] in
             let e = If( (simpl_cond c), nb1, nb2) in
             if (nb2 = []) then
-                simpl p (max_pos nb1 +1) ( (pos, e)::p2 )
+                simpl_const p (max_pos nb1 0 +1) ( (pos, e)::p2 )
             else
-                simpl p (max_pos nb2 +1) ( (pos, e)::p2 )
-        | While(c,b) ->
+                simpl_const p (max_pos nb2 0 +1) ( (pos, e)::p2 )
+        | Some While(c,b) ->
+            print_int pos;
+            print_string "\n";
             let nb = simpl_const b (pos+1) [] in
             let e = While( (simpl_cond c), nb) in
-            simpl p (max_pos nb +1) ( (pos, e)::p2 )
+            simpl_const p (max_pos nb 0 +1) ( (pos, e)::p2 )
+        )
     else
         p2
 
 let simpl_polish (p:program) : program =
-    let prog_after_const = simpl_const p 0 []
-
+    simpl_const p 0 []
+    
