@@ -1,4 +1,6 @@
 (executable
  (name polish)
- (flags :standard -w -27-26-32-33 \ -short-paths)
+ (modules polish syntaxe read print eval)
+ (flags :standard -w -27-26-32-33 \ -short-paths) 
 )
+
