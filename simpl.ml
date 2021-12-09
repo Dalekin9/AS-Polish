@@ -40,6 +40,15 @@ let apply_Op (o:op) (e1:int) (e2:int) : int =
     | Div -> e1 / e2
     | Mod -> e1 mod e2
 
+let apply_comp (comp) (e1:int) (e2:int) : bool =
+    match comp with
+    | Eq -> e1 = e2
+    | Ne -> e1 <> e2
+    | Lt -> e1 < e2
+    | Le -> e1 <= e2
+    | Gt -> e1 > e2
+    | Ge -> e1 >= e2
+
 (*determiner si l'expression est une Constante*)
 let is_Const (e:expr) : bool =
     match e with
@@ -128,6 +137,66 @@ let rec simpl_const (p:program) (pos:position) (p2:program)=
     else
         p2
 
+let cond_with_const (cond) : bool =
+    match cond with
+    | (e1, com, e2) -> 
+        if is_Const e1 && is_Const e2 then
+            true
+        else false
+
+let cond_is_true (cond) : bool =
+match cond with
+| (e1, com, e2) -> 
+    apply_comp com (get_val e1) (get_val e2)
+
+let rec simpl_block (p:program) (pos:position) (pos_instr:position) (p2:program): program =
+    if (pos <= max_pos p 0) then
+        let inst = search_block pos p in
+        match inst with
+        | None ->
+            failwith "none"
+        | Some Set(n,e) -> 
+            simpl_block p (pos+1) (pos_instr +1) ( (pos_instr,Set(n,e))::p2 )
+        | Some Read(n) -> 
+            simpl_block p (pos+1) (pos_instr +1) ( (pos_instr,Read(n))::p2 )
+        | Some Print(e) -> 
+            simpl_block p (pos+1) (pos_instr +1) ( (pos_instr,Print(e))::p2 )
+        | Some If(c,b1,b2) ->
+            if cond_with_const c then 
+                if cond_is_true c then
+                    let p3 = simpl_block b1 (pos+1) (pos_instr) [] in
+                    if (b2 = []) then
+                        simpl_block p (max_pos b1 0 +1) (max_pos p3 0 +1) (List.append p3 p2)
+                    else
+                        simpl_block p (max_pos b2 0 +1) (max_pos p3 0 +1) (List.append p3 p2)
+                else
+                    if b2 = [] then
+                        simpl_block p (max_pos b1 0 +1) (pos_instr) p2
+                    else
+                        let p3 = simpl_block b2 (max_pos b1 0 +1) (pos_instr) [] in
+                        simpl_block p (max_pos b2 0 +1) (max_pos p3 0 +1) (List.append p3 p2)
+            else
+                let p3 = simpl_block b1 (pos+1) (pos_instr+1) [] in
+                let p4 = simpl_block b1 (max_pos b1 0 +1) (max_pos p3 0 +1) [] in
+                let e = If(c,p3,p4) in
+                if (b2 = []) then
+                    simpl_block p (max_pos b1 0+1) (max_pos p3 0 +1) ((pos_instr,e)::p2)
+                else
+                    simpl_block p (max_pos b2 0+1) (max_pos p4 0 +1) ((pos_instr,e)::p2)
+        | Some While(c,b) ->
+            if cond_with_const c then
+                if cond_is_true c then
+                    let nb = simpl_block b (pos+1) (pos_instr + 1) [] in 
+                    simpl_block p (max_pos b 0 +1) (max_pos nb 0 +1) ( (pos_instr,While(c,nb))::p2 )
+                else
+                    simpl_block p (max_pos b 0 +1) pos_instr p2
+            else
+                simpl_block p (max_pos b 0 +1) pos_instr p2
+            
+    else 
+        p2
+        
 let simpl_polish (p:program) : program =
-    simpl_const p 0 []
+    let p2 = simpl_const p 0 [] in
+    simpl_block p2 0 0 []
     
