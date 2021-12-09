@@ -177,7 +177,7 @@ let rec simpl_block (p:program) (pos:position) (pos_instr:position) (p2:program)
                         simpl_block p (max_pos b2 0 +1) (max_pos p3 0 +1) (List.append p3 p2)
             else
                 let p3 = simpl_block b1 (pos+1) (pos_instr+1) [] in
-                let p4 = simpl_block b1 (max_pos b1 0 +1) (max_pos p3 0 +1) [] in
+                let p4 = simpl_block b2 (max_pos b1 0 +1) (max_pos p3 0 +1) [] in
                 let e = If(c,p3,p4) in
                 if (b2 = []) then
                     simpl_block p (max_pos b1 0+1) (max_pos p3 0 +1) ((pos_instr,e)::p2)
@@ -191,7 +191,8 @@ let rec simpl_block (p:program) (pos:position) (pos_instr:position) (p2:program)
                 else
                     simpl_block p (max_pos b 0 +1) pos_instr p2
             else
-                simpl_block p (max_pos b 0 +1) pos_instr p2
+                let nb = simpl_block b (pos +1) (pos_instr+1) [] in
+                simpl_block p (max_pos b 0 +1) (max_pos nb 0 +1) ( (pos_instr, While(c,nb))::p2 )
             
     else 
         p2
