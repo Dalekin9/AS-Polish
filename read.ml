@@ -39,6 +39,7 @@ let name_is_comp (var:name) =
 
 (* separe une liste de mot en 2 liste de mots et retourne une liste de liste de mots*)
 let separate_expr_into_2_expr (list:name list) (finale:name list list)=
+let list = List.filter (fun x -> x != " " ) list in
 match list with
 | [] -> finale
 | x::y::l -> 
@@ -235,18 +236,18 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
   if (pos <= get_max_pos pos_string_list_list 0) then
     let lis = get_line_at_pos pos_string_list_list pos in
     let prof = get_profondeur lis 0 in
-    print_int pos;
-    print_int prof;
-    print_int prof_base;
-    print_string "\n";
     if (prof != prof_base) then
       failwith "Pas d'indentation correcte."
     else
-    let liste = String.split_on_char ' ' lis in 
+    let liste = lis |> String.split_on_char ' ' |> List.filter ( (<>)  "")  in
     let rec parcours_de_la_liste (liste) = 
       match liste with
-        | ""::l -> parcours_de_la_liste l
-        | " "::l -> parcours_de_la_liste l
+        | ""::l -> 
+          print_string "es";
+          parcours_de_la_liste l
+        | " "::l -> 
+          print_string "ess";
+          parcours_de_la_liste l
         | "READ"::l ->
           convert_list_in_ocaml pos_string_list_list ((pos_instr, convert_read l)::list_fin) (pos+1) (prof_base) (pos_instr + 1)
         | "PRINT"::l ->
