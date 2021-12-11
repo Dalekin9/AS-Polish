@@ -3,10 +3,10 @@ open Syntaxe
 (*Cherche le block d'insctruction la position pos*)
 let rec search_block (pos:position) (b:(position * instr)list) =
   match b with
-  | [] -> (*failwith "NO"*) None
+  | [] -> failwith "NO"
   | (x,y)::l ->
     if x = pos then
-      Some y
+      y
     else
       search_block pos l
 
@@ -79,30 +79,27 @@ let rec max_pos (block) (pos:position) =
       max_pos l pos
 
 let rec print_block (block) (indent:int) (pos) : unit= 
-    if (block != [] ) then
-      if (pos <= (max_pos block 0)) then
-        print_string (print_indentation indent 0 "");
+    if (pos <= (max_pos block 0)) then
+        (print_string (print_indentation indent 0 "");
         let inst = search_block pos block in
         match inst with
-        | None -> 
-          print_string "";
-        | Some Set(x,y) -> 
+        | Set(x,y) -> 
           print_string x;
           print_string " :=";
           print_expr y;
           print_string "\n";
           print_block block indent (pos+1)
-        | Some Read(x) -> 
+        | Read(x) -> 
           print_string "READ ";
           print_string x;
           print_string "\n";
           print_block block indent (pos+1)
-        | Some Print(x) ->
+        | Print(x) ->
           print_string "PRINT";
           print_expr x;
           print_string "\n";
           print_block block indent (pos+1)
-        | Some If(c,b1,b2) ->
+        | If(c,b1,b2) ->
           print_string "IF";
           print_cond c;
           print_string "\n";
@@ -113,12 +110,14 @@ let rec print_block (block) (indent:int) (pos) : unit=
             ( print_string ((print_indentation indent 0 "")^"ELSE\n");
               print_block b2 (indent + 2) ((max_pos b1 0)+1);
               print_block block indent ((max_pos b2 0) +1))
-        | Some While(c,b) ->
+        | While(c,b) ->
           print_string "WHILE";
           print_cond c;
           print_string "\n";
           print_block b (indent + 2) (pos+1);
           print_block block indent ((max_pos b 0) + 1)
+        )
+
 
 let print_polish (p:(position * instr) list) =  
   let min = min_instr p (List.length p) in
