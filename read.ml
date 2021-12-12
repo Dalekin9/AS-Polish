@@ -1,3 +1,4 @@
+open Functions
 open Syntaxe
 
 (* Parts the file into a list of numbered strings *)
@@ -111,6 +112,7 @@ let rec convert_expr (list:name list) =
             with e ->
               Var(x)
 
+(* Parts a condition into 2 lists*)
 let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) = 
   match list with
   | x::y::l ->
@@ -120,7 +122,7 @@ let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) =
       separate_cond (y::l) (f_exp@[x]) l_exp
   | _ -> failwith "Impossible de separer la condition en 2"
 
-(*creates a condition*)
+(*Creates a condition*)
 let create_condition (list:name list) = 
   let liste = separate_cond list [] [] in
   match liste with
@@ -223,15 +225,6 @@ let cas_if (liste_blocks) =
 let cas_if_pos (liste_blocks) = 
   match liste_blocks with
   | (x,y) -> x
-
-(* Returns the highest position of an instruction in a block *)
-let rec max_pos (block) (pos:position) = 
-  match block with
-  | [] -> pos
-  | (x,y)::l -> if x > pos then
-                  max_pos l x
-                else 
-                  max_pos l pos
 
 (* Converts a (position, name) list into a (position, instruction) list*)
 let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (list_fin) (pos) (prof_base) (pos_instr:position)=

@@ -1,31 +1,5 @@
+open Functions
 open Syntaxe
-
-(*Cherche le block d'insctruction la position pos*)
-let rec search_block (pos:position) (b:(position * instr)list) =
-  match b with
-  | [] -> failwith "NO"
-  | (x,y)::l -> if x = pos then
-                  y
-                else
-                  search_block pos l
-
-(*Retourne la position de la plus petite instruction du programme*)
-let rec min_instr (b:(position * instr)list) (min)= 
-  match b with
-  | [] -> min
-  | (x,y)::l -> if (x <= min) then
-                  min_instr l x
-                else
-                  min_instr l min
-
-(* Returns the highest position of an instruction in a block *)
-let rec max_pos (block) (pos:position) = 
-  match block with
-  | [] -> pos
-  | (x,y)::l -> if x > pos then
-                  max_pos l x
-                else 
-                  max_pos l pos
 
 (* Prints an operator *)
 let print_op (op:op) =
