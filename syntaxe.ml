@@ -40,4 +40,5 @@ and block = (position * instr) list
 (** Un programme Polish est un bloc d'instructions *)
 type program = block
 
+module NameTable = Map.Make(String)
 (***********************************************************************)
