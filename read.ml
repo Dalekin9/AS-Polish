@@ -1,6 +1,6 @@
 open Syntaxe
 
-(* decouper le fichier en ligne de string *)
+(* Parts the file into a list of numbered strings *)
 let lecture (filename) = 
 let file = open_in filename in
   let rec read_line (lines) (file) (pos:position) =
@@ -15,8 +15,8 @@ let file = open_in filename in
   in
   read_line [] file 0
 
-(* determine si un string est un operateur*)
-let name_is_op (var:name) =
+(* Tests if a string is an operator *)
+let name_is_op (var:string) =
   match var with 
   | "*" -> true
   | "+" -> true
@@ -25,8 +25,8 @@ let name_is_op (var:name) =
   | "%" -> true
   | _ -> false 
 
-
-let name_is_comp (var:name) =
+(* Tests if a string is a comparator *)
+let name_is_comp (var:string) =
   match var with
   | "=" -> true  
   | "<>" -> true
@@ -37,30 +37,29 @@ let name_is_comp (var:name) =
   | _ -> false
 
 
-(* separe une liste de mot en 2 liste de mots et retourne une liste de liste de mots*)
+(* Parts a word list into 2 lists and returns a word list list *)
 let separate_expr_into_2_expr (list:name list) (finale:name list list)=
 let list = List.filter (fun x -> x != " " ) list in
 match list with
 | [] -> finale
-| x::y::l -> 
-  if (name_is_op x) then (*+....*)
-    let rec sep_liste (right:int) (left:int) (liste:name list) (nv_list:name list) (finale:name list list)= 
-      if right = 0 && left = 0  then
-        nv_list::liste::finale
-      else 
-        match liste with
-        | [] -> nv_list::liste::finale
-        | x::l -> 
-          if name_is_op x then
-            if right = 0 then
-              sep_liste 1 left l (x::nv_list) finale
-            else 
-              sep_liste right (left + 1) l (x::nv_list) finale
-          else
-            if right = 0 then
-              sep_liste 0 (left-1) l (x::nv_list) finale
-            else 
-              sep_liste (right-1) left l (x::nv_list) finale
+| x::y::l ->  if (name_is_op x) then (*+....*)
+                let rec sep_liste (right:int) (left:int) (liste:name list) (nv_list:name list) (finale:name list list) = 
+                  if right = 0 && left = 0  then
+                    nv_list::liste::finale
+                  else 
+                    match liste with
+                    | [] -> nv_list::liste::finale
+                    
+                    | x::l -> if name_is_op x then
+                                if right = 0 then
+                                  sep_liste 1 left l (x::nv_list) finale
+                                else 
+                                  sep_liste right (left + 1) l (x::nv_list) finale
+                              else
+                                if right = 0 then
+                                  sep_liste 0 (left-1) l (x::nv_list) finale
+                                else 
+                                  sep_liste (right-1) left l (x::nv_list) finale
 
     in sep_liste 1 1 (y::l) [] []
   else 
@@ -73,44 +72,44 @@ match list with
         [x]::[y]::finale
 | _ -> failwith "separate error fin"
     
-(* transforme une liste de mots en expression*)
+(* Converts a word list into an expression *)
 let rec convert_expr (list:name list) =
   match list with 
   | [] -> failwith "Expression vide."
   | ":"::l -> convert_expr l
   | "="::l -> convert_expr l
   | ":="::l -> convert_expr l
-  | "+"::l -> 
-    let ll = List.filter (fun x -> x != " ") l in
-    let db_list = separate_expr_into_2_expr ll [] in
-    let exp1 = List.nth db_list 0 in
-    let exp2 = List.nth db_list 1 in 
-    Op(Add, convert_expr exp1, convert_expr exp2)
-  | "-"::l -> 
-    let db_list = separate_expr_into_2_expr l [] in
-    let exp1 = List.nth db_list 0 in
-    let exp2 = List.nth db_list 1 in 
-    Op(Sub, convert_expr exp1, convert_expr exp2)
-  | "*"::l ->
-    let db_list = separate_expr_into_2_expr l [] in
-    let exp1 = List.nth db_list 0 in
-    let exp2 = List.nth db_list 1 in 
-    Op(Mul, convert_expr exp1, convert_expr exp2)
-  | "/"::l ->
-    let db_list = separate_expr_into_2_expr l [] in
-    let exp1 = List.nth db_list 0 in
-    let exp2 = List.nth db_list 1 in 
-    Op(Div, convert_expr exp1, convert_expr exp2)
-  | "%"::l ->
-    let db_list = separate_expr_into_2_expr l [] in
-    let exp1 = List.nth db_list 0 in
-    let exp2 = List.nth db_list 1 in 
-    Op(Mod, convert_expr exp1, convert_expr exp2)
-  | x::l -> 
-    try
-      Num(int_of_string x)
-    with e ->
-      Var(x)
+
+  | "+"::l -> let ll = List.filter (fun x -> x != " ") l in
+              let db_list = separate_expr_into_2_expr ll [] in
+              let exp1 = List.nth db_list 0 in
+              let exp2 = List.nth db_list 1 in 
+              Op(Add, convert_expr exp1, convert_expr exp2)
+
+  | "-"::l -> let db_list = separate_expr_into_2_expr l [] in
+              let exp1 = List.nth db_list 0 in
+              let exp2 = List.nth db_list 1 in 
+              Op(Sub, convert_expr exp1, convert_expr exp2)
+
+  | "*"::l -> let db_list = separate_expr_into_2_expr l [] in
+              let exp1 = List.nth db_list 0 in
+              let exp2 = List.nth db_list 1 in 
+              Op(Mul, convert_expr exp1, convert_expr exp2)
+
+  | "/"::l -> let db_list = separate_expr_into_2_expr l [] in
+              let exp1 = List.nth db_list 0 in
+              let exp2 = List.nth db_list 1 in 
+              Op(Div, convert_expr exp1, convert_expr exp2)
+
+  | "%"::l -> let db_list = separate_expr_into_2_expr l [] in
+              let exp1 = List.nth db_list 0 in
+              let exp2 = List.nth db_list 1 in 
+              Op(Mod, convert_expr exp1, convert_expr exp2)
+
+  | x::l -> try
+              Num(int_of_string x)
+            with e ->
+              Var(x)
 
 let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) = 
   match list with
@@ -121,7 +120,7 @@ let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) =
       separate_cond (y::l) (f_exp@[x]) l_exp
   | _ -> failwith "Impossible de separer la condition en 2"
 
-(*create condition*)
+(*creates a condition*)
 let create_condition (list:name list) = 
   let liste = separate_cond list [] [] in
   match liste with
@@ -136,7 +135,7 @@ let create_condition (list:name list) =
     | _ -> failwith "Erreur dans la creation de condition"
 
 
-(* convertit une ligne READ*)
+(* Converts a line into a Read instruction *)
 let rec convert_read (list:string list) =
   match list with 
   | [] -> failwith "Pas de variable pour le READ"
@@ -145,7 +144,7 @@ let rec convert_read (list:string list) =
   | x::_ -> Read(x)
 
 
-(* convertit une ligne PRINT*)
+(* Converts a line into a Print instruction*)
 let rec convert_print (list:string list) =
   match list with 
   | [] -> failwith "Pas de variable pour le PRINT"
@@ -155,6 +154,7 @@ let rec convert_print (list:string list) =
     let exp = convert_expr (x::l) in 
     Print(exp)
 
+(* Returns the indentation of a line *)
 let rec get_profondeur (list:name) (prof:position) =
   if (prof < String.length list) then
     if (String.get list prof = ' ') then
@@ -164,6 +164,7 @@ let rec get_profondeur (list:name) (prof:position) =
   else
     prof
 
+(* Tests if a line is "an Else instruction" *)
 let is_Else (liste) = 
   let l = String.split_on_char ' ' liste in
   if (List.mem "ELSE" l) then
@@ -171,27 +172,29 @@ let is_Else (liste) =
   else
     false
 
+(* Returns the line of position pos *)
 let rec get_line_at_pos (pos_string_list_list:(position * name) list) (pos) =
   match pos_string_list_list with
-  | [] -> 
-    print_string (string_of_int pos);
-    failwith "pas de ligne a la pos"
-  | (x,y)::l ->
-    if x = pos then
-      y
-    else
-      get_line_at_pos l pos
 
+  | [] -> print_string (string_of_int pos);
+          failwith "pas de ligne a la pos"
+
+  | (x,y)::l -> if x = pos then
+                  y
+                else
+                  get_line_at_pos l pos
+
+(* Returns the highest position of a list of lines *)
 let rec get_max_pos (liste) (pos) = 
   match liste with
   | [] -> pos
-  | (x,y)::l ->
-    if (x > pos ) then
-      get_max_pos l (x)
-    else
-      get_max_pos l pos
+  
+  | (x,y)::l -> if (x > pos ) then
+                  get_max_pos l (x)
+                else
+                  get_max_pos l pos
 
-
+(* Creates a block *)
 let rec create_block (liste:(position*name)list) (pos_init:position) (pos_actu:position) (prof_init) (first) (f_list) (s_list) (pos_else:position)= 
 
   if (pos_actu > get_max_pos liste 0) then
@@ -209,29 +212,28 @@ let rec create_block (liste:(position*name)list) (pos_init:position) (pos_actu:p
       else
         (pos_actu::pos_else::[], f_list::s_list::[])
 
+(* Returns the instruction list of an If instruction *)
 let cas_if (liste_blocks) = 
   match liste_blocks with
-  | (x,y) ->
-    match y with 
-      | a::b::l ->
-        a::b::[]
-      | _ -> failwith "rien ds le if"
+  | (x,y) ->  match y with 
+              | a::b::l ->  a::b::[]
+              | _ -> failwith "rien ds le if"
 
+(* Returns the position of an If instruction *)
 let cas_if_pos (liste_blocks) = 
   match liste_blocks with
   | (x,y) -> x
 
-
+(* Returns the highest position of an instruction in a block *)
 let rec max_pos (block) (pos:position) = 
   match block with
   | [] -> pos
-  | (x,y)::l ->
-    if x > pos then
-      max_pos l x
-    else 
-      max_pos l pos
+  | (x,y)::l -> if x > pos then
+                  max_pos l x
+                else 
+                  max_pos l pos
 
-(* convertit une liste de (pos, list) list en (pos, instr ) list*)
+(* Converts a (position, name) list into a (position, instruction) list*)
 let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (list_fin) (pos) (prof_base) (pos_instr:position)=
   if (pos <= get_max_pos pos_string_list_list 0) then
     let lis = get_line_at_pos pos_string_list_list pos in
@@ -279,6 +281,7 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
   else
     list_fin
 
+    (* Main method : Reads a polish file and converts it into a list of (position, instruction)*)
 let read_polish (filename:string) =
 
   let contenu = lecture filename in 

@@ -4,22 +4,30 @@ open Syntaxe
 let rec search_block (pos:position) (b:(position * instr)list) =
   match b with
   | [] -> failwith "NO"
-  | (x,y)::l ->
-    if x = pos then
-      y
-    else
-      search_block pos l
+  | (x,y)::l -> if x = pos then
+                  y
+                else
+                  search_block pos l
 
 (*Retourne la position de la plus petite instruction du programme*)
 let rec min_instr (b:(position * instr)list) (min)= 
   match b with
   | [] -> min
-  | (x,y)::l ->
-    if (x <= min) then
-      min_instr l x
-    else
-      min_instr l min
+  | (x,y)::l -> if (x <= min) then
+                  min_instr l x
+                else
+                  min_instr l min
 
+(* Returns the highest position of an instruction in a block *)
+let rec max_pos (block) (pos:position) = 
+  match block with
+  | [] -> pos
+  | (x,y)::l -> if x > pos then
+                  max_pos l x
+                else 
+                  max_pos l pos
+
+(* Prints an operator *)
 let print_op (op:op) =
   match op with 
   | Add -> print_string "+"
@@ -28,22 +36,21 @@ let print_op (op:op) =
   | Div -> print_string "/"
   | Mod -> print_string "%"
 
-
+(* Prints an expression *)
 let rec print_expr (exp:expr) =
   match exp with 
-  | Num (x) -> 
-    print_string " ";
-    print_int x;
-  | Var (x) -> 
-    print_string " ";
-    print_string x;
-  | Op  (op, exp1, exp2) ->
-    print_string " ";
-    print_op op;
-    print_expr exp1;
-    print_expr exp2
+  | Num (x) ->  print_string " ";
+                print_int x;
 
+  | Var (x) ->  print_string " ";
+                print_string x;
 
+  | Op  (op, exp1, exp2) -> print_string " ";
+                            print_op op;
+                            print_expr exp1;
+                            print_expr exp2
+
+(* Prints a comparator *)
 let print_comp (comp:comp) =
   match comp with
   | Eq -> print_string "="
@@ -53,72 +60,62 @@ let print_comp (comp:comp) =
   | Gt -> print_string ">" 
   | Ge -> print_string ">="
 
-
+(* Prints a condition *)
 let print_cond (cond:cond) =
   match cond with 
-  | (x,y,z) ->
-    print_expr x;
-    print_string " ";
-    print_comp y;
-    print_expr z
+  | (x,y,z) ->  print_expr x;
+                print_string " ";
+                print_comp y;
+                print_expr z
 
-
+(* Prints the indentation of a line *)
 let rec print_indentation (indent:int) (pos:int) (txt:string) =
     if (pos != indent) then
       print_indentation indent (pos+1) (" "^txt)
     else 
       txt
-        
-let rec max_pos (block) (pos:position) = 
-  match block with
-  | [] -> pos
-  | (x,y)::l ->
-    if x > pos then
-      max_pos l x
-    else 
-      max_pos l pos
 
+(* Prints a block of instructions *)
 let rec print_block (block) (indent:int) (pos) : unit= 
     if (pos <= (max_pos block 0)) then
         (print_string (print_indentation indent 0 "");
         let inst = search_block pos block in
         match inst with
-        | Set(x,y) -> 
-          print_string x;
-          print_string " :=";
-          print_expr y;
-          print_string "\n";
-          print_block block indent (pos+1)
-        | Read(x) -> 
-          print_string "READ ";
-          print_string x;
-          print_string "\n";
-          print_block block indent (pos+1)
-        | Print(x) ->
-          print_string "PRINT";
-          print_expr x;
-          print_string "\n";
-          print_block block indent (pos+1)
-        | If(c,b1,b2) ->
-          print_string "IF";
-          print_cond c;
-          print_string "\n";
-          print_block b1 (indent + 2) (pos+1);
-          if (b2 = []) then
-            print_block block indent ((max_pos b1 0) +1)
-          else
-            ( print_string ((print_indentation indent 0 "")^"ELSE\n");
-              print_block b2 (indent + 2) ((max_pos b1 0)+1);
-              print_block block indent ((max_pos b2 0) +1))
-        | While(c,b) ->
-          print_string "WHILE";
-          print_cond c;
-          print_string "\n";
-          print_block b (indent + 2) (pos+1);
-          print_block block indent ((max_pos b 0) + 1)
+        | Set(x,y) -> print_string x;
+                      print_string " :=";
+                      print_expr y;
+                      print_string "\n";
+                      print_block block indent (pos+1)
+
+        | Read(x) ->  print_string "READ ";
+                      print_string x;
+                      print_string "\n";
+                      print_block block indent (pos+1)
+
+        | Print(x) -> print_string "PRINT";
+                      print_expr x;
+                      print_string "\n";
+                      print_block block indent (pos+1)
+
+        | If(c,b1,b2) ->  print_string "IF";
+                          print_cond c;
+                          print_string "\n";
+                          print_block b1 (indent + 2) (pos+1);
+                          if (b2 = []) then
+                            print_block block indent ((max_pos b1 0) +1)
+                          else
+                             (print_string ((print_indentation indent 0 "")^"ELSE\n");
+                              print_block b2 (indent + 2) ((max_pos b1 0)+1);
+                              print_block block indent ((max_pos b2 0) +1))
+
+        | While(c,b) -> print_string "WHILE";
+                        print_cond c;
+                        print_string "\n";
+                        print_block b (indent + 2) (pos+1);
+                        print_block block indent ((max_pos b 0) + 1)
         )
 
-
+(* Main method : Prints a program*)
 let print_polish (p:(position * instr) list) =  
   let min = min_instr p (List.length p) in
   print_block p 0 min
