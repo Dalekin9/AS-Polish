@@ -62,7 +62,9 @@ let rec exprToVal (ex:expr) (envir:int NameTable.t)  =
   match ex with
   | Num(x) -> x
 
-  | Var(x) -> NameTable.find x envir
+  | Var(x) -> (try NameTable.find x envir; with Not_found -> (print_string ("Variable "^x^" does not exist");
+                                                             print_newline();
+                                                             exit(1)))
   
   | Op(op,ex1,ex2) -> 
     match op with
@@ -105,8 +107,11 @@ let rec eval (p:program) (envir: int NameTable.t) (pos: position) =
     match ins with
     | Set(x,y) -> NameTable.add x (exprToVal y envir) envir
 
-    | Read(name) -> (print_string (name ^"? "); 
-                    NameTable.add name (read_int()) envir)
+    | Read(name) -> (print_string (name ^ "?");
+                    let value = read_int_opt() in
+                    match value with
+                    |None -> instr_eval ins envir
+                    | _ -> NameTable.add name (Option.get value) envir )
     
     | If(cond,b1,b2) ->  if (condToBool cond envir) then
                           eval b1 envir (pos + 1)
