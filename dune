@@ -2,5 +2,6 @@
  (name polish)
  (modules polish syntaxe read print eval functions)
  (flags :standard -w -27-26-32-33 \ -short-paths) 
+ (libraries zarith)
 )
 

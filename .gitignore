@@ -1,3 +1,5 @@
 dune-project
+_build
 .merlin
-workspace.code-workspace
+.svg
+.report
