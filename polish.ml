@@ -1,6 +1,3 @@
-
-open Syntaxe
-
 (** Projet Polish -- Analyse statique d'un mini-langage impératif *)
 let usage () =
   print_string "Polish : analyse statique d'un mini-langage\n";
@@ -9,13 +6,12 @@ let usage () =
 let main () =
   match Sys.argv with
 
-  | [|_;"--reprint";file|] -> 
+  | [|_;"-reprint";file|] -> 
     let pro = Read.read_polish file in 
     Print.print_polish pro
-  | [|_;"--eval";file|] -> 
+  | [|_;"-eval";file|] -> 
     let pro = Read.read_polish file in 
     Eval.eval_polish pro
-
   | _ -> usage ()
 
 (* lancement de ce main *)
