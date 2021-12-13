@@ -1,5 +1,5 @@
-open Functions
-open Syntaxe
+open Modules.Functions
+open Modules.Syntaxe
 
 (* Parts the file into a list of numbered strings *)
 let lecture (filename) = 

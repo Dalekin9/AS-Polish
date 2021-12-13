@@ -5,10 +5,14 @@ let usage () =
 
 let main () =
   match Sys.argv with
+
   | [|_;"-reprint";file|] -> 
     let pro = Read.read_polish file in 
     Print.print_polish pro
   | [|_;"-eval";file|] -> 
+    let pro = Read.read_polish file in 
+    Eval.eval_polish pro
+  | [|_;"-sign";file|] -> 
     let pro = Read.read_polish file in 
     Eval.eval_polish pro
   | _ -> usage ()
