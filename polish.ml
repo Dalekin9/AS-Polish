@@ -13,6 +13,9 @@ let main () =
   | [|_;"-eval";file|] -> 
     let pro = read_polish file in 
     eval_polish pro
+  | [|_;"-sign";file|] -> 
+    let pro = read_polish file in 
+    eval_polish pro
   | _ -> usage ()
 
 (* lancement de ce main *)

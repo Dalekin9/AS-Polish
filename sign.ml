@@ -40,6 +40,8 @@ type program = block
 
 type sign = Neg | Zero | Pos | Error 
 
+module SignTable = Map.Make(String)
+
 let rec search_block (pos:position) (b:(position * instr)list) =
   match b with
   | [] -> failwith "NO"
@@ -59,7 +61,7 @@ let max_pos (p:program) (pos:position) =
   (************************************************)
   (************************************************)
   (************************************************)
-
+  
 (*determine si exp est dans la liste*)
 let rec is_in_list (liste : (expr * sign list)list) (exp:expr) : bool =
   match liste with
@@ -187,19 +189,32 @@ let cond_inverse (c:comp) : comp =
   | Gt -> Le
   | Ge -> Lt
 
-let rec prop_sign (p:program) (pos:position) (liste : (name * sign list)list) : ((name * sign list)list) =
+let rec prop_sign (p:program) (pos:position) (signs : SignTable) (errors: int list): ([SignTable]::[int list]) =
   if (pos <= max_pos p 0) then
     (
       let inst = search_block pos p in
       match inst with
       | Set(n,e) ->
         let l = sign_expr e liste in
-        prop_sign p (pos+1) ( (n,l)::liste)
+        if Map.exist (fun x -> x = n) then
+          (
+            let sig = Map.remove n signs in
+            prop_sign p (pos+1) (Map.add n l sign) errors
+          )
+        else
+          prop_sign p (pos+1) (Map.add n l signs) errors
+
       | Read(n) ->
-        let l = Pos::Zero::Neg::[] in
-        prop_sign p (pos+1) ( (n,l)::liste)
+        let l = sign_expr e liste in
+        if Map.exist (fun x -> x = n) then
+          (
+            let sig = Map.remove n signs in
+            prop_sign p (pos+1) (Map.add n l sign) errors
+          )
+        else
+          prop_sign p (pos+1) (Map.add n l signs) errors
       | Print(e) ->
-        prop_sign p (pos+1) liste
+        prop_sign p (pos+1) signs errors
       | If((e1,c,e2),b1,b2) ->
         let lc1 = sign_cond c e1 e2 liste in
         let cc = cond_inverse c in 
@@ -252,6 +267,8 @@ let rec prop_sign (p:program) (pos:position) (liste : (name * sign list)list) : 
   else
     liste
 
+
+(*print une liste de signe*)
 let rec print_list_sign (liste: sign list) : unit =
   match liste with
   | [] -> print_string ""
@@ -268,15 +285,20 @@ let rec print_list_sign (liste: sign list) : unit =
     print_string "!";
     print_list_sign l
 
-let rec print_list (liste:(name * sign list)list) (pos:position) : unit =
-  match liste with
-  | [] -> print_string ""
-  | (e,l)::ll ->
-    print_string (e^" ");
-    print_list_sign l;
-    print_string "\n"
-    
+(*print la liste de signes possible pour chaque variable*)
+let rec print_list (liste:SignTable) : unit =
+  Map.iter (fun x y -> 
+    (print_string (e^" ");
+    print_list_sign y;
+    print_string "\n") liste
 
-let sign (p:program) : unit = 
+
+(*fonction principale*)
+let sign_polish (p:program) : unit = 
+  let signs = SignTable.empty in
+  let errors = ErrorTable.empty in 
   let liste = prop_sign p 0 [] in
-  print_list liste 0
+  print_list List.nth liste 0
+  List.iter (fun x -> 
+    (print_string x;
+      print_string " : Division by 0\n") (List.nth liste 1)
