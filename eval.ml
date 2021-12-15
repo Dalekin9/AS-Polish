@@ -2,7 +2,7 @@ open Functions
 open Syntaxe
 
 (* Searches for the closest position after pos in the program *)
-let rec next_pos (pos:position) (current: int) (p:program) =
+let rec next_pos (pos) (current) (p) =
   match p with
   | [] -> (current)
 
@@ -16,11 +16,11 @@ let rec next_pos (pos:position) (current: int) (p:program) =
       
 
 (* Main method : Evaluates a program *)
-let eval_polish (p:program) : unit = 
+let eval_polish (p) = 
 let env = NameTable.empty in
 
 (* Converts an expression into its value *)
-let rec exprToVal (ex:expr) (envir:int NameTable.t)  =
+let rec exprToVal (ex) (envir)  =
   match ex with
   | Num(x) -> x
 
@@ -48,7 +48,7 @@ let rec exprToVal (ex:expr) (envir:int NameTable.t)  =
 in
 
 (* Converts a condition into its boolean value *)  
-let condToBool (condition:cond) (envir: int NameTable.t) = 
+let condToBool (condition) (envir) = 
   match condition with
   | (ex1, compar, ex2) -> match compar with
                           | Eq -> (exprToVal ex1 envir) = (exprToVal ex2 envir)
@@ -60,10 +60,10 @@ let condToBool (condition:cond) (envir: int NameTable.t) =
 in
 
 (* Runs through a list of instructions and evaluates each one *)
-let rec eval (p:program) (envir: int NameTable.t) (pos: position) =
+let rec eval (p) (envir) (pos) =
 
   (* Evaluates the given instruction with an environement *)
-  let rec instr_eval (ins:instr) (envir:int NameTable.t) =
+  let rec instr_eval (ins) (envir) =
   
     match ins with
     | Set(x,y) -> NameTable.add x (exprToVal y envir) envir

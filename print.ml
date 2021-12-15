@@ -2,7 +2,7 @@ open Functions
 open Syntaxe
 
 (* Prints an operator *)
-let print_op (op:op) =
+let print_op (op) =
   match op with 
   | Add -> print_string "+"
   | Sub -> print_string "-"
@@ -11,7 +11,7 @@ let print_op (op:op) =
   | Mod -> print_string "%"
 
 (* Prints an expression *)
-let rec print_expr (exp:expr) =
+let rec print_expr (exp) =
   match exp with 
   | Num (x) ->  print_string " ";
                 print_int x;
@@ -25,7 +25,7 @@ let rec print_expr (exp:expr) =
                             print_expr exp2
 
 (* Prints a comparator *)
-let print_comp (comp:comp) =
+let print_comp (comp) =
   match comp with
   | Eq -> print_string "="
   | Ne -> print_string "<>"
@@ -35,7 +35,7 @@ let print_comp (comp:comp) =
   | Ge -> print_string ">="
 
 (* Prints a condition *)
-let print_cond (cond:cond) =
+let print_cond (cond) =
   match cond with 
   | (x,y,z) ->  print_expr x;
                 print_string " ";
@@ -43,14 +43,14 @@ let print_cond (cond:cond) =
                 print_expr z
 
 (* Prints the indentation of a line *)
-let rec print_indentation (indent:int) (pos:int) (txt:string) =
+let rec print_indentation (indent) (pos) (txt) =
     if (pos != indent) then
       print_indentation indent (pos+1) (" "^txt)
     else 
       txt
 
 (* Prints a block of instructions *)
-let rec print_block (block) (indent:int) (pos) : unit= 
+let rec print_block (block) (indent) (pos)= 
     if (pos <= (max_pos block 0)) then
         (print_string (print_indentation indent 0 "");
         let inst = search_block pos block in
@@ -90,6 +90,6 @@ let rec print_block (block) (indent:int) (pos) : unit=
         )
 
 (* Main method : Prints a program*)
-let print_polish (p:(position * instr) list) =  
+let print_polish (p) =  
   let min = min_instr p (List.length p) in
   print_block p 0 min
