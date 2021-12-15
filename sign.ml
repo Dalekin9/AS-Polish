@@ -1,69 +1,8 @@
-
-(** Position : numéro de ligne dans le fichier, débutant à 1 *)
-type position = int
-
-(** Nom de variable *)
-type name = string
-
-(** Opérateurs arithmétiques : + - * / % *)
-type op = Add | Sub | Mul | Div | Mod
-
-(** Expressions arithmétiques *)
-type expr =
-  | Num of int
-  | Var of name
-  | Op of op * expr * expr
-
-(** Opérateurs de comparaisons *)
-type comp =
-| Eq (* = *)
-| Ne (* Not equal, <> *)
-| Lt (* Less than, < *)
-| Le (* Less or equal, <= *)
-| Gt (* Greater than, > *)
-| Ge (* Greater or equal, >= *)
-
-(** Condition : comparaison entre deux expressions *)
-type cond = expr * comp * expr
-
-(** Instructions *)
-type instr =
-  | Set of name * expr
-  | Read of name
-  | Print of expr
-  | If of cond * block * block
-  | While of cond * block
-and block = (position * instr) list
-
-(** Un programme Polish est un bloc d'instructions *)
-type program = block
-
-type sign = Neg | Zero | Pos | Error 
-
-module SignTable = Map.Make(String)
-
-let rec search_block (pos:position) (b:(position * instr)list) =
-  match b with
-  | [] -> failwith "NO"
-  | (x,y)::l ->
-    if x = pos then
-      y
-    else
-      search_block pos l
-
-
-let max_pos (p:program) (pos:position) = 
-  pos
-
-
-  (************************************************)
-  (************************************************)
-  (************************************************)
-  (************************************************)
-  (************************************************)
+open Syntaxe
+open Functions
   
 (*determine si exp est dans la liste*)
-let rec is_in_list (liste : (expr * sign list)list) (exp:expr) : bool =
+let rec is_in_list (liste) (exp) =
   match liste with
   | [] -> false
   | (e,_)::l ->
@@ -73,75 +12,103 @@ let rec is_in_list (liste : (expr * sign list)list) (exp:expr) : bool =
     is_in_list l exp
 
 (*fusionne les deux liste de signe en fonction de l'addition*)
-let join_add l1 l2 : sign list =
-  if (l1 = Pos::[]) then
-    if (l2 = Pos::[] || l2 = Zero::[]) then
-      [Pos]
-    else if (l2 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-      Pos::Zero::[]
-    else
+let join_add l1 l2=
+  if ( (List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l2 ) ||
+       (List.exists (fun x -> x = Neg) l1 && List.exists (fun x -> x = Pos) l2 ) ) then
       Pos::Zero::Neg::[]
-  else if (l1 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-    if (l2 = Zero::[]) then
-      [Zero]
-    else if (l2 = Pos::[]) then
-      [Pos]
-    else if (l2 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-      Pos::Zero::[]
-    else
-      Pos::Zero::Neg::[]
-  else if (l1 = Zero::[]) then
-    if (l2 = Zero::[]) then
-      [Zero]
-    else if (l2 = Pos::[]) then
-      [Pos]
-    else if (l2 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-      Pos::Zero::[]
-    else if (l2 = Neg::[]) then
-      Neg::[]
-    else
-      Zero::Neg::[]
-  else
+  else if ( l1 = Pos::[] && l2 = (Pos::Zero::[]) || l1 = Pos::Zero[] && l2 = (Pos:[]) )  then
+    Pos::[]
+  else if ( l1 = Pos::Zero[] && l2 = (Pos::Zero::[])  ) then
+    Pos::Zero::[]
+  else if (  l1 = Neg::[] && l2 = (Zero::Neg::[]) || l1 = Zero::Neg[] && l2 = (Neg:[]) ) then
+    Neg::[]
+  else if ( l1 = Zero::Neg[] && l2 = (Zero::Neg::[]) then
     Zero::Neg::[]
+  else if ( l1 = Zero::[] && l2 = (Zero::[]) then
+    Zero::[]
+  else
+    failwith "Erreur dans la jonction des listes de signs dans l'addition"
 
 (*fusionne les deux liste de signe en fonction de la soustraction*)
-let join_sub l1 l2 : sign list =
-  if (l1 = Pos::[]) then
-    if (l2 = Pos::[] || l2 = Zero::[]) then
-      [Pos]
-    else if (l2 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-      Pos::Zero::[]
-    else
+let join_sub l1 l2 =
+ if ( (List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l2 ) ||
+       (List.exists (fun x -> x = Neg) l1 && List.exists (fun x -> x = Pos) l2 ) ) then
       Pos::Zero::Neg::[]
-  else if (l1 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-    if (l2 = Zero::[]) then
-      [Zero]
-    else if (l2 = Pos::[]) then
-      [Pos]
-    else if (l2 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-      Pos::Zero::[]
-    else
-      Pos::Zero::Neg::[]
-  else if (l1 = Zero::[]) then
-    if (l2 = Zero::[]) then
-      [Zero]
-    else if (l2 = Pos::[]) then
-      [Pos]
-    else if (l2 = Pos::Zero::[] || l1 = Zero::Pos::[] ) then
-      Pos::Zero::[]
-    else if (l2 = Neg::[]) then
-      Neg::[]
-    else
-      Zero::Neg::[]
-  else
+  else if ( l1 = Pos::[] && l2 = (Pos::Zero::[]) || l1 = Pos::Zero[] && l2 = (Pos:[]) )  then
+    Pos::[]
+  else if ( l1 = Pos::Zero[] && l2 = (Pos::Zero::[])  ) then
+    Pos::Zero::[]
+  else if (  l1 = Neg::[] && l2 = (Zero::Neg::[]) || l1 = Zero::Neg[] && l2 = (Neg:[]) ) then
+    Neg::[]
+  else if ( l1 = Zero::Neg[] && l2 = (Zero::Neg::[]) then
     Zero::Neg::[]
+  else if ( l1 = Zero::[] && l2 = (Zero::[]) then
+    Zero::[]
+  else
+    failwith "Erreur dans la jonction des listes de signs dans la soustraction"
+
+(*fusionne les deux liste de signe en fonction de la multiplication*)
+let join_mul l1 l2 =
+  if ( (List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l2 ) ||
+    (List.exists (fun x -> x = Neg) l1 && List.exists (fun x -> x = Pos) l2 ) ) then
+   Pos::Zero::Neg::[]
+  else if ( l1 = Pos::[] && l2 = (Pos::Zero::[]) || l1 = Pos::Zero[] && l2 = (Pos:[]) )  then
+    Pos::[]
+  else if ( l1 = Pos::Zero[] && l2 = (Pos::Zero::[])  ) then
+    Pos::Zero::[]
+  else if (  l1 = Neg::[] && l2 = (Zero::Neg::[]) || l1 = Zero::Neg[] && l2 = (Neg:[]) ) then
+    Neg::[]
+  else if ( l1 = Zero::Neg[] && l2 = (Zero::Neg::[]) then
+    Zero::Neg::[]
+  else if ( l1 = Zero::[] && l2 = (Zero::[]) then
+    Zero::[]
+  else
+    failwith "Erreur dans la jonction des listes de signs dans la multiplication"
+
+(*fusionne les deux liste de signe en fonction de la division*)
+let join_div l1 l2 =
+  if ( (List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l2 ) ||
+    (List.exists (fun x -> x = Neg) l1 && List.exists (fun x -> x = Pos) l2 ) ) then
+    Pos::Zero::Neg::[]
+  else if ( l1 = Pos::[] && l2 = (Pos::Zero::[]) || l1 = Pos::Zero[] && l2 = (Pos:[]) )  then
+    Pos::[]
+  else if ( l1 = Pos::Zero[] && l2 = (Pos::Zero::[])  ) then
+    Pos::Zero::[]
+  else if (  l1 = Neg::[] && l2 = (Zero::Neg::[]) || l1 = Zero::Neg[] && l2 = (Neg:[]) ) then
+    Neg::[]
+  else if ( l1 = Zero::Neg[] && l2 = (Zero::Neg::[]) then
+    Zero::Neg::[]
+  else if ( l1 = Zero::[] && l2 = (Zero::[]) then
+    Zero::[]
+  else
+    failwith "Erreur dans la jonction des listes de signs dans la division"
+
+(*fusionne les deux liste de signe en fonction du modulo*)
+let join_mod l1 l2 =
+  if ( (List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l2 ) ||
+    (List.exists (fun x -> x = Neg) l1 && List.exists (fun x -> x = Pos) l2 ) ) then
+    Pos::Zero::Neg::[]
+  else if ( l1 = Pos::[] && l2 = (Pos::Zero::[]) || l1 = Pos::Zero[] && l2 = (Pos:[]) )  then
+    Pos::[]
+  else if ( l1 = Pos::Zero[] && l2 = (Pos::Zero::[])  ) then
+    Pos::Zero::[]
+  else if (  l1 = Neg::[] && l2 = (Zero::Neg::[]) || l1 = Zero::Neg[] && l2 = (Neg:[]) ) then
+    Neg::[]
+  else if ( l1 = Zero::Neg[] && l2 = (Zero::Neg::[]) then
+    Zero::Neg::[]
+  else if ( l1 = Zero::[] && l2 = (Zero::[]) then
+    Zero::[]
+  else
+    failwith "Erreur dans la jonction des listes de signs dans le modulo"
 
 
 let is_possible_Eq (l1) (l2) : bool =
-    false
+    if l1 = l2 then
+      true
+    else false
 
 (*determine les signes possible d'une expression*)
-let rec sign_expr (exp:expr) (liste) : (sign list) =
+let rec sign_expr (exp) (liste) =
   match exp with
   | Num(i) -> 
     if i = 0 then
@@ -151,21 +118,19 @@ let rec sign_expr (exp:expr) (liste) : (sign list) =
     else
       [Pos]
   | Var(n) ->
-    (* si existe dans liste -> retourne sa valeur
-    sinon pos neg zero*)
-    Pos::Neg::Zero::[]
+    (try SignTable.find n liste with Not_found -> (Pos::Neg::Zero::[]))
   | Op(o,e1,e2) ->
     let l1 = sign_expr e1 liste in
     let l2 = sign_expr e2 liste in
     match o with
     | Add -> join_add l1 l2
     | Sub -> join_sub l1 l2
-    | Mul -> failwith "TODO"
-    | Div -> failwith "TODO"
-    | Mod -> failwith "TODO"
+    | Mul -> join_mul l1 l2
+    | Div -> join_div l1 l2
+    | Mod -> join_mod l1 l2
 
 (*determine les signes d'une condition et met potentiellement a jour les valeurs*)
-let sign_cond (c:comp) (e1:expr) (e2:expr) (liste) : bool =
+let sign_cond (c) (e1) (e2) (liste) =
   let l1 = sign_expr e1 liste in
   let l2 = sign_expr e2 liste in 
   match c with
@@ -180,7 +145,8 @@ let sign_cond (c:comp) (e1:expr) (e2:expr) (liste) : bool =
   | Gt (* Greater than, > *) -> failwith "TODO"
   | Ge (* Greater or equal, >= *) -> failwith "TODO"
 
-let cond_inverse (c:comp) : comp =
+(*retourner le comparateur inverse*)
+let cond_inverse (c)=
   match c with 
   | Eq -> Ne
   | Ne -> Eq
@@ -189,7 +155,8 @@ let cond_inverse (c:comp) : comp =
   | Gt -> Le
   | Ge -> Lt
 
-let rec prop_sign (p:program) (pos:position) (signs : SignTable) (errors: int list): ([SignTable]::[int list]) =
+(*: ([SignTable]::[int list])*)
+let rec prop_sign (p) (pos) (signs) (errors) =
   if (pos <= max_pos p 0) then
     (
       let inst = search_block pos p in
@@ -269,7 +236,7 @@ let rec prop_sign (p:program) (pos:position) (signs : SignTable) (errors: int li
 
 
 (*print une liste de signe*)
-let rec print_list_sign (liste: sign list) : unit =
+let rec print_list_sign (liste) =
   match liste with
   | [] -> print_string ""
   | Zero::l ->
@@ -286,7 +253,7 @@ let rec print_list_sign (liste: sign list) : unit =
     print_list_sign l
 
 (*print la liste de signes possible pour chaque variable*)
-let rec print_list (liste:SignTable) : unit =
+let rec print_list (liste) =
   Map.iter (fun x y -> 
     (print_string (e^" ");
     print_list_sign y;
@@ -294,7 +261,7 @@ let rec print_list (liste:SignTable) : unit =
 
 
 (*fonction principale*)
-let sign_polish (p:program) : unit = 
+let sign_polish (p) : unit = 
   let signs = SignTable.empty in
   let errors = ErrorTable.empty in 
   let liste = prop_sign p 0 [] in
