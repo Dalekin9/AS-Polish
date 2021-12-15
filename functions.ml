@@ -1,7 +1,7 @@
 open Syntaxe
 
 (* Searches and returns the block at position pos or fails if it doesn't exist *)
-  let rec search_block (pos:position) (b:(position * instr)list) =
+  let rec search_block (pos) (b) =
     match b with
     | [] -> failwith "NO"
   
@@ -12,7 +12,7 @@ open Syntaxe
   
   
   (* Returns the highest position of an instruction in a block *)
-  let rec max_pos (b:block) (max:int)= 
+  let rec max_pos (b) (max)= 
     match b with
     | [] -> max
   
@@ -22,7 +22,7 @@ open Syntaxe
                     max_pos l max
   
   (* Returns the smallest position of an instruction in a block *)
-  let rec min_instr (b:(position * instr)list) (min)= 
+  let rec min_instr (b) (min)= 
     match b with
     | [] -> min
   

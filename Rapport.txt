@@ -47,3 +47,5 @@ Organisation du travail :
 Misc :
 
 Pas de code impératif.
+Pas de fichier .mli pour le fichier polish (car il aurait été vide et nous ne savons pas si cela est correct)
+Pas de fichier .mli pour les fichier syntaxe et functions (car tout leur contenu est public)

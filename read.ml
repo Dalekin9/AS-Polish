@@ -17,7 +17,7 @@ let file = open_in filename in
   read_line [] file 0
 
 (* Tests if a string is an operator *)
-let name_is_op (var:string) =
+let name_is_op (var) =
   match var with 
   | "*" -> true
   | "+" -> true
@@ -27,7 +27,7 @@ let name_is_op (var:string) =
   | _ -> false 
 
 (* Tests if a string is a comparator *)
-let name_is_comp (var:string) =
+let name_is_comp (var) =
   match var with
   | "=" -> true  
   | "<>" -> true
@@ -39,12 +39,12 @@ let name_is_comp (var:string) =
 
 
 (* Parts a word list into 2 lists and returns a word list list *)
-let separate_expr_into_2_expr (list:name list) (finale:name list list)=
+let separate_expr_into_2_expr (list) (finale)=
 let list = List.filter (fun x -> x != " " ) list in
 match list with
 | [] -> finale
 | x::y::l ->  if (name_is_op x) then (*+....*)
-                let rec sep_liste (right:int) (left:int) (liste:name list) (nv_list:name list) (finale:name list list) = 
+                let rec sep_liste (right) (left) (liste) (nv_list) (finale) = 
                   if right = 0 && left = 0  then
                     nv_list::liste::finale
                   else 
@@ -74,7 +74,7 @@ match list with
 | _ -> failwith "separate error fin"
     
 (* Converts a word list into an expression *)
-let rec convert_expr (list:name list) =
+let rec convert_expr (list) =
   match list with 
   | [] -> failwith "Expression vide."
   | ":"::l -> convert_expr l
@@ -113,7 +113,7 @@ let rec convert_expr (list:name list) =
               Var(x)
 
 (* Parts a condition into 2 lists*)
-let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) = 
+let rec separate_cond (list) (f_exp) (l_exp) = 
   match list with
   | x::y::l ->
     if name_is_comp (x) then
@@ -123,7 +123,7 @@ let rec separate_cond (list:name list) (f_exp:name list) (l_exp:name list) =
   | _ -> failwith "Impossible de separer la condition en 2"
 
 (*Creates a condition*)
-let create_condition (list:name list) = 
+let create_condition (list) = 
   let liste = separate_cond list [] [] in
   match liste with
   | (x,y,z) ->
@@ -138,7 +138,7 @@ let create_condition (list:name list) =
 
 
 (* Converts a line into a Read instruction *)
-let rec convert_read (list:string list) =
+let rec convert_read (list) =
   match list with 
   | [] -> failwith "Pas de variable pour le READ"
   | ""::l -> convert_read l
@@ -147,7 +147,7 @@ let rec convert_read (list:string list) =
 
 
 (* Converts a line into a Print instruction*)
-let rec convert_print (list:string list) =
+let rec convert_print (list) =
   match list with 
   | [] -> failwith "Pas de variable pour le PRINT"
   | ""::l -> convert_print l
@@ -157,7 +157,7 @@ let rec convert_print (list:string list) =
     Print(exp)
 
 (* Returns the indentation of a line *)
-let rec get_profondeur (list:name) (prof:position) =
+let rec get_profondeur (list) (prof) =
   if (prof < String.length list) then
     if (String.get list prof = ' ') then
       get_profondeur list (prof+1)
@@ -175,7 +175,7 @@ let is_Else (liste) =
     false
 
 (* Returns the line of position pos *)
-let rec get_line_at_pos (pos_string_list_list:(position * name) list) (pos) =
+let rec get_line_at_pos (pos_string_list_list) (pos) =
   match pos_string_list_list with
 
   | [] -> print_string (string_of_int pos);
@@ -197,7 +197,7 @@ let rec get_max_pos (liste) (pos) =
                   get_max_pos l pos
 
 (* Creates a block *)
-let rec create_block (liste:(position*name)list) (pos_init:position) (pos_actu:position) (prof_init) (first) (f_list) (s_list) (pos_else:position)= 
+let rec create_block (liste) (pos_init) (pos_actu) (prof_init) (first) (f_list) (s_list) (pos_else)= 
 
   if (pos_actu > get_max_pos liste 0) then
     (pos_actu::pos_else::[], f_list::s_list::[])
@@ -227,7 +227,7 @@ let cas_if_pos (liste_blocks) =
   | (x,y) -> x
 
 (* Converts a (position, name) list into a (position, instruction) list*)
-let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (list_fin) (pos) (prof_base) (pos_instr:position)=
+let rec convert_list_in_ocaml (pos_string_list_list) (list_fin) (pos) (prof_base) (pos_instr)=
   if (pos <= get_max_pos pos_string_list_list 0) then
     let lis = get_line_at_pos pos_string_list_list pos in
     let prof = get_profondeur lis 0 in
@@ -275,7 +275,7 @@ let rec convert_list_in_ocaml (pos_string_list_list:(position * name) list) (lis
     list_fin
 
     (* Main method : Reads a polish file and converts it into a list of (position, instruction)*)
-let read_polish (filename:string) =
+let read_polish (filename) =
 
   let contenu = lecture filename in 
   convert_list_in_ocaml contenu [] 0 0 0
