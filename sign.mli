@@ -1,2 +1,2 @@
 open Syntaxe
-val sign_polish : program - unit
+val sign_polish : program -> unit
