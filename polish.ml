@@ -1,6 +1,7 @@
 open Read
 open Print
 open Eval
+open Vars
 let usage () =
   print_string "Polish : analyse statique d'un mini-langage\n";
   print_string "Entrez une ligne de commande valide.\n"
@@ -13,6 +14,9 @@ let main () =
   | [|_;"-eval";file|] -> 
     let pro = read_polish file in 
     eval_polish pro
+  | [|_;"-vars";file|] -> 
+    let pro = read_polish file in 
+    vars_polish pro
   | _ -> usage ()
 
 (* lancement de ce main *)

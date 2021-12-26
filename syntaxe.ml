@@ -41,4 +41,6 @@ and block = (position * instr) list
 type program = block
 
 module NameTable = Map.Make(String)
+
+module Names = Set.Make(String)
 (***********************************************************************)
