@@ -1,7 +1,9 @@
 open Read
 open Print
 open Eval
+open Simpl
 open Sign
+
 let usage () =
   print_string "Polish : analyse statique d'un mini-langage\n";
   print_string "Entrez une ligne de commande valide.\n"
@@ -17,6 +19,7 @@ let main () =
   | [|_;"-sign";file|] -> 
     let pro = read_polish file in 
     sign_polish pro
+  | [|_;"-simpl";file|] -> Print.print_polish (Simpl.simpl_polish (Read.read_polish file))
   | _ -> usage ()
 
 (* lancement de ce main *)

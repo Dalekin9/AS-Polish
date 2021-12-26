@@ -16,6 +16,7 @@ let file = open_in filename in
   in
   read_line [] file 0
 
+
 (* Tests if a string is an operator *)
 let name_is_op (var) =
   match var with 
@@ -61,7 +62,6 @@ match list with
                                   sep_liste 0 (left-1) l (x::nv_list) finale
                                 else 
                                   sep_liste (right-1) left l (x::nv_list) finale
-
     in sep_liste 1 1 (y::l) [] []
   else 
     if (name_is_op y) then
@@ -72,7 +72,7 @@ match list with
       else 
         [x]::[y]::finale
 | _ -> failwith "separate error fin"
-    
+
 (* Converts a word list into an expression *)
 let rec convert_expr (list) =
   match list with 
@@ -122,6 +122,7 @@ let rec separate_cond (list) (f_exp) (l_exp) =
       separate_cond (y::l) (f_exp@[x]) l_exp
   | _ -> failwith "Impossible de separer la condition en 2"
 
+
 (*Creates a condition*)
 let create_condition (list) = 
   let liste = separate_cond list [] [] in
@@ -156,6 +157,7 @@ let rec convert_print (list) =
     let exp = convert_expr (x::l) in 
     Print(exp)
 
+
 (* Returns the indentation of a line *)
 let rec get_profondeur (list) (prof) =
   if (prof < String.length list) then
@@ -166,6 +168,7 @@ let rec get_profondeur (list) (prof) =
   else
     prof
 
+
 (* Tests if a line is "an Else instruction" *)
 let is_Else (liste) = 
   let l = String.split_on_char ' ' liste in
@@ -173,6 +176,7 @@ let is_Else (liste) =
     true
   else
     false
+
 
 (* Returns the line of position pos *)
 let rec get_line_at_pos (pos_string_list_list) (pos) =
@@ -198,7 +202,6 @@ let rec get_max_pos (liste) (pos) =
 
 (* Creates a block *)
 let rec create_block (liste) (pos_init) (pos_actu) (prof_init) (first) (f_list) (s_list) (pos_else)= 
-
   if (pos_actu > get_max_pos liste 0) then
     (pos_actu::pos_else::[], f_list::s_list::[])
   else
@@ -213,6 +216,7 @@ let rec create_block (liste) (pos_init) (pos_actu) (prof_init) (first) (f_list) 
         create_block liste pos_init (pos_actu+1) prof_init false f_list s_list pos_actu
       else
         (pos_actu::pos_else::[], f_list::s_list::[])
+
 
 (* Returns the instruction list of an If instruction *)
 let cas_if (liste_blocks) = 
@@ -274,8 +278,8 @@ let rec convert_list_in_ocaml (pos_string_list_list) (list_fin) (pos) (prof_base
   else
     list_fin
 
+
     (* Main method : Reads a polish file and converts it into a list of (position, instruction)*)
 let read_polish (filename) =
-
   let contenu = lecture filename in 
   convert_list_in_ocaml contenu [] 0 0 0
