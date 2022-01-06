@@ -7,16 +7,20 @@ TORIS Ugo, @toris, 21957683
 
 Fonctionnalités :
 
---read : Parseur transformant un fichier polish en un 'program'
---reprint : écrit en sortie de la console le code d'un 'program' Polish
---eval : évalue un 'program' et affiche sur la sortie les résultats des instructions Print 
-
+-read    : Parseur transformant un fichier polish en un 'program'
+-reprint : écrit en sortie de la console le code d'un 'program' Polish
+-eval    : évalue un 'program' et affiche sur la sortie les résultats des instructions Print 
+-simpl   : simplifie un 'program' en propageant les constantes et en éliminant les blocs mort (retourne un 'program') 
+-sign    : analyse statique des signes possibles des variables d'un 'program'
+		   et affiche les signes potentiels (pour chaque variable), et les erreurs (leur position)
+-vars    : calcul statique des variables d'un 'program' risquant d'etre accedées avant d'être initialisées
+		   et affiche toutes les variables du 'program' puis celles potentiellement non initialisées
 
 
 Compilation et exécution :
 
 Compiler avec : "make"
-Exécuter avec : "./run --args" où args == "--reprint" ou "--eval", puis le chemin du fichier Polish
+Exécuter avec : "./run -args" où args == "-reprint" ou "-eval", puis le chemin du fichier Polish
 
 Pas d'utilisation de bibliothèque externe.
 
@@ -26,21 +30,25 @@ Découpage modulaire :
 
 Module Syntaxe : Regroupement de tous les types utilisés dans le projet
 Module Functions : Fonctions communes aux différents modules
-Module Read : Fonctions servant à la fonctionnalité --read
-Module Print: Fonctions servant à la fonctionnalité --reprint
-Module Eval: Fonctions servant à la fonctionnalité --eval
-
+Module Read : Fonctions servant à la fonctionnalité -read
+Module Print: Fonctions servant à la fonctionnalité -reprint
+Module Eval: Fonctions servant à la fonctionnalité -eval
+Module Simpl: Fonctions servant à la fonctionnalité -simpl
+Module Sign: Fonctions servant à la fonctionnalité -sign
+Module Vars: Fonctions servant à la fonctionnalité -vars
 
 
 Organisation du travail :
 
 * Répartition du travail : 
-	Pauline : --read, --reprint
-	Ugo : --eval
+	Pauline : -read, -reprint, -simpl, -sign
+	Ugo : -eval, -vars, commentaires
 
 * Chronologique du travail :
-	Jusqu'au 8 décembre : Travail sur les fonctionnalités --read, --reprint et --eval
+	Jusqu'au 8 décembre : Travail sur les fonctionnalités -read, -reprint et -eval
 	12 décembre : Mise en commun du travail + Ajout des tests de la branche prof
+	De début décembre au 26 décembre : Travail sur les fonctionnalités -simpl, -sign et -vars
+	6 Janvier : Mise en commun du travail + correction d'erreurs
 
 
 

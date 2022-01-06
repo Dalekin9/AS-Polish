@@ -38,18 +38,27 @@ let join_add l1 l2=
   if ( List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l2 ) ||
        (List.exists (fun x -> x = Neg) l1 && List.exists (fun x -> x = Pos) l2 ) then
       Pos::Zero::Neg::[]
-  else if (l1 = Pos::[] && l2 = Pos::Zero::[]) || (l1 = Pos::Zero::[] && l2 = Pos::[] )  then
+  else if (l1 = Pos::[] || l2 = Pos::[]) then
     Pos::[]
-  else if l1 = Pos::Zero::[] && l2 = Pos::Zero::[]  then
-    Pos::Zero::[]
-  else if (l1 = Neg::[] && l2 = Zero::Neg::[]) || (l1 = Zero::Neg::[] && l2 = Neg::[] ) then
+  else if (l1 = Neg::[] || l1 = Neg::[]) then
     Neg::[]
-  else if l1 = Zero::Neg::[] && l2 = Zero::Neg::[] then
-    Zero::Neg::[]
-  else if l1 = Zero::[] && l2 = Zero::[] then
+  else if (l1 = Zero::[] || l2 = Zero::[]) then
     Zero::[]
+  else if (l1 = Zero::[] || l2 = Zero::[]) then
+    Zero::[]
+  else if ( (List.exists (fun x -> x = Zero) l1 && List.exists (fun x -> x = Pos) l1 && not (List.exists (fun x -> x = Neg) l1) ) ||
+    (List.exists (fun x -> x = Zero) l2 && List.exists (fun x -> x = Pos) l2 && not (List.exists (fun x -> x = Neg) l2) ) ) then
+    Pos::Zero::[]
+  else if ( (List.exists (fun x -> x = Zero) l1 && List.exists (fun x -> x = Neg) l1 && not (List.exists (fun x -> x = Pos) l1) ) ||
+    (List.exists (fun x -> x = Zero) l2 && List.exists (fun x -> x = Neg) l2 && not (List.exists (fun x -> x = Pos) l2) ) ) then
+    Zero::Neg::[]
+  else if ( (List.exists (fun x -> x = Zero) l1 && List.exists (fun x -> x = Pos) l1 && List.exists (fun x -> x = Neg) l1 ) ||
+    (List.exists (fun x -> x = Zero) l2 && List.exists (fun x -> x = Pos) l2 && List.exists (fun x -> x = Neg) l2)  ) then
+    Pos::Zero::Neg::[]
   else
     failwith "Erreur dans la jonction des listes de signs dans l'addition"
+
+ 
 
 (*fusionne les deux liste de signe en fonction de la soustraction*)
 let join_sub l1 l2 =
@@ -185,15 +194,15 @@ let is_possible_Lt l1 l2 =
   if List.exists (fun x -> x = Neg) l1 then
     true
   else if List.exists (fun x -> x = Zero) l1 then
-    if (List.exists (fun x -> x = Zero) l2 || List.exists (fun x -> x = Zero) l2) then
-      true
+    if (List.exists (fun x -> x = Zero) l2 || List.exists (fun x -> x = Neg) l2) then
+      false
     else  
       false
   else if (List.exists (fun x -> x = Pos) l1) then
-    if (List.exists (fun x -> x = Zero) l2) then
-      true
-    else  
+    if (List.exists (fun x -> x = Zero) l2 || List.exists (fun x -> x = Neg) l2) then
       false
+    else  
+      true
   else
     failwith "erreur is possible < (Lt)"   
 
@@ -206,17 +215,22 @@ let is_possible_Le l1 l2 =
     else
       false
   else if List.exists (fun x -> x = Pos) l1 then
-    if List.exists (fun x -> x = Pos) l2 then
-      true
-    else
+    if (List.exists (fun x -> x = Zero) l2 || List.exists (fun x -> x = Neg) l2) then
       false
+    else  
+      true
   else
     failwith "erreur is possible <= (Le)"   
 
 let is_possible_Gt l1 l2 =
   if List.exists (fun x -> x = Pos) l1 then
     true
-  else if List.exists (fun x -> x = Zero) l1 || l1 = Neg::[]then
+  else if List.exists (fun x -> x = Zero) l1 then
+    if List.exists (fun x -> x = Pos) l2 || List.exists (fun x -> x = Zero) l2 then
+      false
+    else 
+      true
+  else if List.exists (fun x -> x = Neg) l1 then
     if (l2 = Neg::[] ) then
       true
     else false
@@ -231,7 +245,7 @@ let is_possible_Ge l1 l2 =
       false
     else
       true
-  else if l1 = Neg::[] then
+  else if List.exists (fun x -> x = Neg) l1 then
     if l2 != Neg::[] then
       false
     else
@@ -241,7 +255,6 @@ let is_possible_Ge l1 l2 =
     
 (*determine si une condition est possible vis a vis de l'environnemnt de ses expressions*)
 let cond_is_possible c e1 e2 liste =
-  print_string "dans cond is possible\n";
   let l1 = sign_expr e1 liste in
   let l2 = sign_expr e2 liste in 
   match c with
@@ -255,14 +268,12 @@ let cond_is_possible c e1 e2 liste =
 (*determine les signes d'une condition et met potentiellement a jour les valeurs
 on suppose ici que la condition est possible*)
 let sign_cond (c) (e1) (e2) (liste) =
-  print_string "dans sign cond\n";
   let l1 = sign_expr e1 liste in
   let l2 = sign_expr e2 liste in 
   match c with
-  | Eq -> l2 (*=*)
+  | Eq -> l2
   | Ne -> 
     (
-      print_string "Ne\n";
       let rec funct l1 l2 =
         if l2 = [] then l1 
         else (
@@ -272,14 +283,14 @@ let sign_cond (c) (e1) (e2) (liste) =
           funct (l1) (List.tl l2) )
         in
         funct l1 l2 
-    )  (*<>*)
+    )
   | Lt -> (
         if List.exists (fun x -> x = Pos) l2 then
           Pos::Zero::Neg::[]
         else if List.exists (fun x -> x = Zero) l2 then
           Neg::[]
         else
-          Neg::[](*<*)
+          Neg::[]
   )
   | Le -> (
     if List.exists (fun x -> x = Pos) l2 then
@@ -287,7 +298,7 @@ let sign_cond (c) (e1) (e2) (liste) =
     else if List.exists (fun x -> x = Zero) l2 then
       Zero::Neg::[]
     else
-      Neg::[] (*<=*)
+      Neg::[] 
   )
   | Gt -> 
     (
@@ -297,7 +308,7 @@ let sign_cond (c) (e1) (e2) (liste) =
         Pos::[]
       else
         Pos::[]
-    ) (*>*)
+    )
   | Ge -> 
     ( 
       if List.exists (fun x -> x = Neg) l2 then
@@ -306,7 +317,7 @@ let sign_cond (c) (e1) (e2) (liste) =
         Pos::Zero::[]
       else
         Pos::[]
-    ) (*>=*)
+    )
 
 (*retourner le comparateur inverse*)
 let cond_inverse (c)=
@@ -319,7 +330,6 @@ let cond_inverse (c)=
   | Ge -> Lt
 
 let rec union_error l1 l2 =
-  print_string "union error\n";
   if (List.length l1 = 0) then
     l2
   else if (List.length l2 = 0) then
@@ -330,7 +340,6 @@ let rec union_error l1 l2 =
       union_error (List.tl l1) (List.cons (List.hd l1) l2)
 
 let rec union_sign (l1) (l2) =
-  print_string "union sign\n";
   if SignTable.is_empty l1 then 
     l2
   else
@@ -367,29 +376,20 @@ let rec prop_sign (p) (pos) (signs) (errors) =
       match inst with
 
       | Set(n,e) ->
-        print_string "dans un set\n";
         let l = sign_expr e signs in
         if SignTable.exists (fun x y -> x = n) signs then
-          (
-            let sign = SignTable.remove n signs in
-            prop_sign p (pos+1) (SignTable.add n l sign) (if List.exists (fun x -> x = Error) l then pos::errors else errors)
-          )
+            prop_sign p (pos+1) (SignTable.add n l signs) (if List.exists (fun x -> x = Error) l then pos::errors else errors)
         else
           prop_sign p (pos+1) (SignTable.add n l signs) (if List.exists (fun x -> x = Error) l then pos::errors else errors)
 
       | Read(n) ->
-        print_string "dans un read\n";
         let l = sign_expr (Var(n)) signs in
         if SignTable.exists (fun x y -> x = n) signs then
-          (
-            let sign = SignTable.remove n signs in
-            prop_sign p (pos+1) (SignTable.add n l sign) errors
-          )
+            prop_sign p (pos+1) (SignTable.add n l signs) errors
         else
           prop_sign p (pos+1) (SignTable.add n l signs) errors
 
       | Print(e) ->
-        print_string "dans un print\n";
         if check_vars_is_init e signs then
           prop_sign p (pos+1) signs errors
         else 
@@ -399,61 +399,72 @@ let rec prop_sign (p) (pos) (signs) (errors) =
         if ( (check_vars_is_init e1 signs) = false || (check_vars_is_init e2 signs) = false ) then
             failwith "Variable non initialisée"
         else 
-          (let lc1 = cond_is_possible c e1 e2 signs in
-          let cond1 = (if lc1 then sign_cond c e1 e2 signs else []) in
-          let cc = cond_inverse c in 
-          let lc2 = cond_is_possible cc e1 e2 signs in
-          let cond2 = (if lc2 then sign_cond cc e1 e2 signs else []) in
-          let signs1 = (
-              if (is_var e1) then(
+          (
+            let lc1 = cond_is_possible c e1 e2 signs in
+            let cond1 = (if lc1 then sign_cond c e1 e2 signs else []) in
+            let cc = cond_inverse c in 
+            let lc2 = cond_is_possible cc e1 e2 signs in
+            let cond2 = (if lc2 then sign_cond cc e1 e2 signs else []) in
+            let signs1 = (
+                if (is_var e1) then(
+                    let value = get_val e1 in
+                    SignTable.add value cond1 signs)
+                else
+                  signs) in
+            let signs2 = (
+                if (is_var e1) then(
                   let value = get_val e1 in
-                  SignTable.add value cond1 signs)
-              else
-                signs) in
-          let signs2 = (
-              if (is_var e1) then(
-                let value = get_val e1 in
-                SignTable.add value cond2 signs)
-              else
-                signs ) in 
-          if b2 = [] then(
-              if lc1 = false then
-                    prop_sign p (max_pos b1 0 +1) signs errors
-              else (
-                  let liste_fin = prop_sign b1 (pos +1) signs1 (if List.exists (fun x -> x = Error) cond1 then pos::errors else errors) in
-                  match liste_fin with
-                  | (x,y) -> prop_sign p (max_pos b1 0 +1) x y))
-          else (
-              if lc1 = false then
-                (
-                if lc2 = false then
-                  ( print_string "lc2 false\n";
-                  prop_sign p (max_pos b2 0 +1) signs errors )
-                else (
-                    let liste_fin = prop_sign b2 (max_pos b1 0 +1) signs1 (if List.exists (fun x -> x = Error) cond1 then pos::errors else errors) in
-                    match liste_fin with 
-                    | (x,y) -> prop_sign p (max_pos b2 0 +1) x y ) )
-              else (
-                  let liste_fin = prop_sign b1 (pos +1) signs1 (if List.exists (fun x -> x = Error) cond1 then pos::errors else errors) in
+                  SignTable.add value cond2 signs)
+                else
+                  signs ) in 
+            if b2 = [] then
+              (
+                if lc1 = false then
+                      prop_sign p (max_pos b1 0 +1) signs errors
+                else 
+                  (
+                    let liste_fin = prop_sign b1 (pos +1) signs1 (if List.exists (fun x -> x = Error) cond1 then pos::errors else errors) in
                     match liste_fin with
-                    | (x,y) ->  (
-                        if lc2 = false then 
-                          prop_sign p (max_pos b2 0 +1) x y
-                        else
-                          (
-                          let liste_fin2 = prop_sign b2 (max_pos b1 0 +1) signs2 (if List.exists (fun x -> x = Error) cond2 then pos::errors else errors) in
-                          print_string "go match liste fin 2\n";
-                          match liste_fin2 with
-                          | (xx,yy) -> prop_sign p (max_pos b2 0 +1) (union_sign x xx) (union_error y yy) )
-                      )
+                    | (x,y) -> prop_sign p (max_pos b1 0 +1) x y
+                  )
+              )
+            else 
+              (
+                if lc1 = false then
+                  (
+                  if lc2 = false then
+                    prop_sign p (max_pos b2 0 +1) signs errors
+                  else 
+                    (
+                      let liste_fin = prop_sign b2 (max_pos b1 0 +1) signs1 (if List.exists (fun x -> x = Error) cond1 then pos::errors else errors) in
+                      match liste_fin with 
+                      | (x,y) -> prop_sign p (max_pos b2 0 +1) x y 
+                    ) 
+                  )
+                else 
+                  (
+                    let liste_fin = prop_sign b1 (pos +1) signs1 (if List.exists (fun x -> x = Error) cond1 then pos::errors else errors) in
+                      match liste_fin with
+                      | (x,y) ->  
+                        (
+                          if lc2 = false then 
+                            prop_sign p (max_pos b2 0 +1) x y
+                          else
+                            (
+                            let liste_fin2 = prop_sign b2 (max_pos b1 0 +1) signs2 (if List.exists (fun x -> x = Error) cond2 then pos::errors else errors) in
+                            match liste_fin2 with
+                            | (xx,yy) -> prop_sign p (max_pos b2 0 +1) (union_sign x xx) (union_error y yy) 
+                            )
+                        )
+                  )
               )
           )
-        )
       | While((e1,c,e2),b) ->
         if ( (check_vars_is_init e1 signs) == false || (check_vars_is_init e2 signs) == false ) then
           failwith "Variable non initialisée"
         else 
-            (let rec parcours_while env1 =
+            (
+              let rec parcours_while env1 =
               match env1 with
               | (x,y) ->
                   ( 
@@ -462,8 +473,7 @@ let rec prop_sign (p) (pos) (signs) (errors) =
                         let signs1 = (
                           if (is_var e1) then(
                             let value = get_val e1 in
-                            let sign = SignTable.remove value x in
-                            SignTable.add value (sign_cond c e1 e2 x) sign)
+                            SignTable.add value (sign_cond c e1 e2 x) signs)
                           else
                             x ) in
                         let envx = prop_sign b (pos+1) signs1 y in
@@ -477,44 +487,37 @@ let rec prop_sign (p) (pos) (signs) (errors) =
                     else
                       env1
                   )
-            in
-            let env_fin = parcours_while (signs,errors) in
-            match env_fin with
-            | (s,e) ->
-              (
-                let cc = cond_inverse c in
-                let cond_inv = sign_cond cc e1 e1 s in
-                let signs1 = (
-                if (is_var e1) then(
-                    let value = get_val e1 in
-                    let sign = SignTable.remove value s in
-                    SignTable.add value cond_inv sign)
-                else
-                  s) in
-                prop_sign p (max_pos b 0 +1) s e
-              )
-          )
+              in
+              let env_fin = parcours_while (signs,errors) in
+              match env_fin with
+              | (s,e) ->
+                (
+                  let cc = cond_inverse c in
+                  let cond_inv = sign_cond cc e1 e2 s in
+                  let signs1 = (
+                  if (is_var e1) then(
+                      let value = get_val e1 in
+                      SignTable.add value cond_inv s)
+                  else
+                    s) in
+                  prop_sign p (max_pos b 0 +1) (union_sign s signs) (union_error e errors)
+                )
+            )
     )
   else
     (signs,errors)
 
 
 (*print une liste de signe*)
-let rec print_list_sign (liste) =
-  match liste with
-  | [] -> print_string ""
-  | Zero::l ->
-    print_string "0";
-    print_list_sign l
-  | Neg::l ->
-    print_string "-";
-    print_list_sign l
-  | Pos::l ->
-    print_string "+";
-    print_list_sign l
-  | Error::l ->
-    print_string "!";
-    print_list_sign l
+let print_list_sign (liste) =
+  if List.exists (fun x -> x = Pos) liste then
+    print_string "+ ";
+  if List.exists (fun x -> x = Zero) liste then
+    print_string "0 ";
+  if List.exists (fun x -> x = Neg) liste then
+    print_string "- ";
+  if List.exists (fun x -> x = Error) liste then
+    print_string "! "
 
 (*print la liste de signes possible pour chaque variable*)
 let print_list (liste) =
