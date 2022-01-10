@@ -242,10 +242,8 @@ let rec convert_list_in_ocaml (pos_string_list_list) (list_fin) (pos) (prof_base
     let rec parcours_de_la_liste (liste) = 
       match liste with
         | ""::l -> 
-          print_string "es";
           parcours_de_la_liste l
         | " "::l -> 
-          print_string "ess";
           parcours_de_la_liste l
         | "READ"::l ->
           convert_list_in_ocaml pos_string_list_list ((pos_instr, convert_read l)::list_fin) (pos+1) (prof_base) (pos_instr + 1)

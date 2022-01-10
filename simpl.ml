@@ -74,29 +74,16 @@ let simpl_cond (c)=
 
 (*Simplifies a Num*)
 let rec simpl_const (p) (pos) (p2)=
-    print_int pos;
-    print_int (max_pos p 0);
-    print_string "\n";
     if (pos <= (max_pos p 0)) then
-        (print_string "fesse";
-        let inst = search_block pos p in
-        print_string "inst";
+        (let inst = search_block pos p in
         match inst with
         | Set(n,e) -> 
-            print_int pos;
-            print_string "\n";
             simpl_const p (pos+1) ( (pos, Set(n, (simpl_exp e)))::p2)
         | Read(n) -> 
-            print_int pos;
-            print_string "\n";
             simpl_const p (pos+1) ( (pos, Read(n))::p2 )
         | Print(e) -> 
-            print_int pos;
-            print_string "\n";
             simpl_const p (pos+1) ( (pos, Print(simpl_exp e))::p2 )
         | If(c,b1,b2) ->
-            print_int pos;
-            print_string "\n";
             let nb1 = simpl_const b1 (pos+1) [] in
             let nb2 = simpl_const b2 (max_pos nb1 0 + 1) [] in
             let e = If( (simpl_cond c), nb1, nb2) in
@@ -105,8 +92,6 @@ let rec simpl_const (p) (pos) (p2)=
             else
                 simpl_const p (max_pos nb2 0 +1) ( (pos, e)::p2 )
         | While(c,b) ->
-            print_int pos;
-            print_string "\n";
             let nb = simpl_const b (pos+1) [] in
             let e = While( (simpl_cond c), nb) in
             simpl_const p (max_pos nb 0 +1) ( (pos, e)::p2 )
