@@ -18,7 +18,7 @@ tests.report.svg: tests.report
 	./buildbadge tests > tests.report.svg
 
 binary:
-	dune build polish.exe
+	Modules/dune build polish.exe
 
 byte:
 	dune build polish.bc

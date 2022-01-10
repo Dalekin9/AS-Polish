@@ -34,6 +34,7 @@ let print_comp (comp) =
   | Gt -> print_string ">" 
   | Ge -> print_string ">="
 
+
 (* Prints a condition *)
 let print_cond (cond) =
   match cond with 
