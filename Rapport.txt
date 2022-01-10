@@ -25,7 +25,6 @@ Exécuter avec : "./run -args" où args == "-reprint" ou "-eval", puis le chemin
 Pas d'utilisation de bibliothèque externe.
 
 
-
 Découpage modulaire :
 
 Module Syntaxe : Regroupement de tous les types utilisés dans le projet
@@ -57,4 +56,9 @@ Misc :
 Pas de code impératif.
 Pas de fichier .mli pour le fichier polish (car il aurait été vide et nous ne savons pas si cela est correct)
 Pas de fichier .mli pour les fichier syntaxe et functions (car tout leur contenu est public)
-Le reste des fichiers .mli contiennent uniquement leur fonction principale
+Le reste des fichiers .mli contiennent uniquement leur fonction principale.
+Pour la fonctionnalité sign : 
+	-Dans les conditions, seuls les cas tels que : x < y, x < expr et expr > x (Peu importe le signe) sont pris en compte.
+	-Si A contient ! alors les variables utilisant A ne prennent pas le !.
+	-Il est possible d'avoir une division par 0 et qu'aucune variable ne contienne de !. (Exemple : x < / b 0)
+	-Pos > Pos (ou <, si les valeurs sont égales, la condition est fausse).
