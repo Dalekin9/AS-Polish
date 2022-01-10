@@ -59,6 +59,6 @@ Pas de fichier .mli pour les fichier syntaxe et functions (car tout leur contenu
 Le reste des fichiers .mli contiennent uniquement leur fonction principale.
 Pour la fonctionnalité sign : 
 	-Dans les conditions, seuls les cas tels que : x < y, x < expr et expr > x (Peu importe le signe) sont pris en compte.
-	-Si A contient ! alors les variables utilisant A ne prennent pas le !.
+	-Si A contient ! alors les variables utilisant A prennent pas le ! (propagation).
 	-Il est possible d'avoir une division par 0 et qu'aucune variable ne contienne de !. (Exemple : x < / b 0)
 	-Pos > Pos (ou <, si les valeurs sont égales, la condition est fausse).

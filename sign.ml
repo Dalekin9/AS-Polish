@@ -6,6 +6,11 @@ let is_var e =
   | Var(_) -> true
   | _ -> false
 
+let is_num e =
+  match e with
+  | Num(_) -> true
+  | _ -> false
+
 let is_expr expr =
   match expr with
   | Op(_) -> true
@@ -15,6 +20,12 @@ let get_val e =
   match e with
   | Var(x) -> x
   | _ -> failwith " ce n'est pas une Var(x)"
+
+let get_num e =
+  match e with
+  | Num(x) -> x
+  | _ -> failwith " ce n'est pas un Num(x)"
+    
   
 (*Returns true if exp exist in the environnement*)
 let rec is_in_list (liste) (exp) =
@@ -262,6 +273,15 @@ let is_possible_Ge l1 l2 =
     
 (*Establishes if a cond is possible considering the environnement*)
 let cond_is_possible c e1 e2 liste =
+  if (is_num(e1) && is_num(e2)) then
+    (match c with
+    | Eq -> if get_num(e1) == get_num(e2) then true else false
+    | Ne -> if get_num(e1) != get_num(e2) then true else false
+    | Lt -> if get_num(e1) < get_num(e2) then true else false
+    | Le -> if get_num(e1) <= get_num(e2) then true else false
+    | Gt -> if get_num(e1) > get_num(e2) then true else false 
+    | Ge -> if get_num(e1) >= get_num(e2) then true else false )
+  else (
   let l1 = sign_expr e1 liste in
   let l2 = sign_expr e2 liste in 
   match c with
@@ -270,7 +290,7 @@ let cond_is_possible c e1 e2 liste =
   | Lt -> is_possible_Lt l1 l2 
   | Le -> is_possible_Le l1 l2 
   | Gt -> is_possible_Gt l1 l2 
-  | Ge -> is_possible_Ge l1 l2 
+  | Ge -> is_possible_Ge l1 l2 )
 
 (*Defines a cond's signs and potentally updates them.
   The condition is established to be possible*)
