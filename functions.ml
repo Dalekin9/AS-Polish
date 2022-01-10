@@ -7,7 +7,7 @@ let rec search_block (pos) (b) =
                   y
                 else
                   search_block pos l
-
+;;
 
 (* Returns the highest position of an instruction in a block *)
 let rec max_pos (b) (max)= 
@@ -18,6 +18,7 @@ let rec max_pos (b) (max)=
                   max_pos l x
                 else
                   max_pos l max
+;;
 
 (* Returns the smallest position of an instruction in a block *)
 let rec min_instr (b) (min)= 
@@ -28,3 +29,18 @@ let rec min_instr (b) (min)=
                   min_instr l x
                 else
                   min_instr l min
+;;
+
+(*Returns the next instruction's position*)
+let rec next_pos (pos) (current) (p) =
+  match p with
+  | [] -> (current)
+
+  | (x,y)::l -> if current < x then
+                  next_pos pos current l
+                else
+                    if current > x && x > pos then
+                      next_pos pos x l
+                    else
+                      next_pos pos current l
+;;  

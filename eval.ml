@@ -1,19 +1,6 @@
 open Functions
 open Syntaxe
 
-(* Searches for the closest position after pos in the program *)
-let rec next_pos (pos) (current) (p) =
-  match p with
-  | [] -> (current)
-
-  | (x,y)::l -> if current < x then
-                  next_pos pos current l
-                else
-                    if current > x && x > pos then
-                      next_pos pos x l
-                    else
-                      next_pos pos current l
-      
 
 (* Main method : Evaluates a program *)
 let eval_polish (p) = 

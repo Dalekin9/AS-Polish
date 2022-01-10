@@ -278,8 +278,7 @@ let rec convert_list_in_ocaml (pos_string_list_list) (list_fin) (pos) (prof_base
   else
     list_fin
 
-
-    (* Main method : Reads a polish file and converts it into a list of (position, instruction)*)
+(* Main method : Reads a polish file and converts it into a list of (position, instruction)*)
 let read_polish (filename) =
   let contenu = lecture filename in 
   convert_list_in_ocaml contenu [] 0 0 0

@@ -4,6 +4,8 @@ open Eval
 open Simpl
 open Sign
 open Vars
+
+
 let usage () =
   print_string "Polish : analyse statique d'un mini-langage\n";
   print_string "Entrez une ligne de commande valide.\n"

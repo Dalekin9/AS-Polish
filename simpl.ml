@@ -3,13 +3,13 @@ open Functions
 
 (***************************************)
 
-(*retourne la valeur d'une Constante*)
+(*Returns a Num's value*)
 let get_val e =
     match e with
     | Num(i) -> i
     | _ -> failwith "erreur get_val : appel sur autre que Const"
 
-(*Applique l'operation sur e1 et e2*)
+(*Applies the operator on e1 and e2*)
 let apply_Op (o) (e1) (e2) =
     match o with
     | Add -> e1 + e2
@@ -18,6 +18,7 @@ let apply_Op (o) (e1) (e2) =
     | Div -> e1 / e2
     | Mod -> e1 mod e2
 
+(*Applies the comparator on e1 and e2*)
 let apply_comp (comp) (e1) (e2) =
     match comp with
     | Eq -> e1 = e2
@@ -27,13 +28,13 @@ let apply_comp (comp) (e1) (e2) =
     | Gt -> e1 > e2
     | Ge -> e1 >= e2
 
-(*determiner si l'expression est une Constante*)
+(*Returns true if e is a Num*)
 let is_Const (e) =
     match e with
     | Num(i) -> true
     | _ -> false
 
-(*simplifie une expression*)
+(*Simplifies an expression*)
 let simpl_exp (e) =
     match e with
     | Num(i) -> Num(i)
@@ -66,10 +67,12 @@ let simpl_exp (e) =
         else
             Op(o,e1,e2)
 
+(*Simplifies a condition*)
 let simpl_cond (c)=
     match c with
     | (e1, com, e2) -> ( (simpl_exp e1),com , (simpl_exp e2) )
 
+(*Simplifies a Num*)
 let rec simpl_const (p) (pos) (p2)=
     print_int pos;
     print_int (max_pos p 0);
@@ -111,6 +114,7 @@ let rec simpl_const (p) (pos) (p2)=
     else
         p2
 
+(*Returns true if cond is composed of 2 Num*)
 let cond_with_const (cond) =
     match cond with
     | (e1, com, e2) -> 
@@ -123,6 +127,7 @@ match cond with
 | (e1, com, e2) -> 
     apply_comp com (get_val e1) (get_val e2)
 
+(*Simplifies a block or a program*)
 let rec simpl_block (p) (pos) (pos_instr) (p2) =
     if (pos <= max_pos p 0) then
         let inst = search_block pos p in
@@ -168,7 +173,8 @@ let rec simpl_block (p) (pos) (pos_instr) (p2) =
             
     else 
         p2
-        
+
+(*Main function*)
 let simpl_polish (p) =
     let p2 = simpl_const p 0 [] in
     simpl_block p2 0 0 []

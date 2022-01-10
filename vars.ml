@@ -1,31 +1,22 @@
 open Syntaxe
 open Functions
 
-let rec next_pos (pos) (current) (p) =
-  match p with
-  | [] -> (current)
 
-  | (x,y)::l -> if current < x then
-                  next_pos pos current l
-                else
-                    if current > x && x > pos then
-                      next_pos pos x l
-                    else
-                      next_pos pos current l
-;;  
-
+(*Prints a set's elements*)
 let rec print_Set (elts) =
   match elts with
   |[] -> print_newline()
   |elt::l ->  (print_string elt; print_string " "; print_Set l;)
 ;;
 
+(*Main function*)
 let vars_polish (p) =
   let vars_init = Names.empty in
   let vars_non_init = Names.empty in
 
+  (*Analyses a block or a program*)
   let rec vars (p) ((init) ,(non_init)) (pos) =
-
+    
     let analyse_instr (instr) ((init) ,(non_init)) =
       let rec analyse_expr (expr) ((init) ,(non_init)) =         
         match expr with
@@ -38,13 +29,13 @@ let vars_polish (p) =
         |Op(op,expr1,expr2) ->  union_Set_expr expr1 expr2 (init,non_init)
       
       
-
+      (*Unites 2 expressions' respective sets*)
       and union_Set_expr (expr1) (expr2) (init, non_init) =
         match analyse_expr expr1 (init,non_init) with
                                     |(init1,non_init1) -> match analyse_expr expr2 (init,non_init) with
                                                           |(init2,non_init2) -> (Names.union init1 init2, Names.union non_init1 non_init2)
       
-
+      (*Analyses a condition*)
       and analyse_cond (cond) ((init), (non_init)) =
         match cond with
         (expr1,comp,expr2) -> union_Set_expr expr1 expr2 (init, non_init)
